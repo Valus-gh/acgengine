@@ -6,17 +6,15 @@
  */
 
 
-
 //////////////
 // #INCLUDE //
 //////////////
 
-   // Main include:
-   #include "engine.h"
+// Main include:
+#include "engine.h"
 
-   // Windows:
-   #include <Windows.h>
-
+// Windows:
+#include <Windows.h>
 
 
 /////////////////////////
@@ -28,19 +26,18 @@
  */
 struct Eng::Timer::Reserved
 {
-   uint64_t cpuFreq;   ///< Frequency multiplier used by performance counter
+	uint64_t cpuFreq; ///< Frequency multiplier used by performance counter
 
 
-   /**
-    * Constructor.
-    */
-   Reserved() : cpuFreq{ 0 }
-   {
-      if (!QueryPerformanceFrequency((LARGE_INTEGER *)&cpuFreq))
-         ENG_LOG_ERROR("Performance counter not supported");
-   }
+	/**
+	 * Constructor.
+	 */
+	Reserved() : cpuFreq{0}
+	{
+		if (!QueryPerformanceFrequency((LARGE_INTEGER*)&cpuFreq))
+			ENG_LOG_ERROR("Performance counter not supported");
+	}
 };
-
 
 
 /////////////////////////
@@ -53,7 +50,7 @@ struct Eng::Timer::Reserved
  */
 ENG_API Eng::Timer::Timer() : reserved(std::make_unique<Eng::Timer::Reserved>())
 {
-   ENG_LOG_DEBUG("[+]");
+	ENG_LOG_DEBUG("[+]");
 }
 
 
@@ -63,7 +60,7 @@ ENG_API Eng::Timer::Timer() : reserved(std::make_unique<Eng::Timer::Reserved>())
  */
 ENG_API Eng::Timer::~Timer()
 {
-   ENG_LOG_DEBUG("[-]");
+	ENG_LOG_DEBUG("[-]");
 }
 
 
@@ -71,10 +68,10 @@ ENG_API Eng::Timer::~Timer()
 /**
  * Get singleton instance.
  */
-Eng::Timer ENG_API &Eng::Timer::getInstance()
+Eng::Timer ENG_API& Eng::Timer::getInstance()
 {
-   static Timer instance;
-   return instance;
+	static Timer instance;
+	return instance;
 }
 
 
@@ -85,13 +82,13 @@ Eng::Timer ENG_API &Eng::Timer::getInstance()
  */
 uint64_t ENG_API Eng::Timer::getCounter() const
 {
-   // Not supported?
-   if (reserved->cpuFreq == 0)
-      return 0;
+	// Not supported?
+	if (reserved->cpuFreq == 0)
+		return 0;
 
-   uint64_t li = 0;
-   QueryPerformanceCounter((LARGE_INTEGER *)&li);
-   return li;
+	uint64_t li = 0;
+	QueryPerformanceCounter((LARGE_INTEGER*)&li);
+	return li;
 }
 
 
@@ -102,11 +99,11 @@ uint64_t ENG_API Eng::Timer::getCounter() const
  */
 double ENG_API Eng::Timer::getCounterDiff(uint64_t t1, uint64_t t2) const
 {
-   // Not supported?
-   if (reserved->cpuFreq == 0)
-      return 0.0;
+	// Not supported?
+	if (reserved->cpuFreq == 0)
+		return 0.0;
 
-   uint64_t r = ((t2 - t1) * 1000000) / reserved->cpuFreq;
+	uint64_t r = ((t2 - t1) * 1000000) / reserved->cpuFreq;
 
-   return static_cast<double>(r) / 1000.0;
+	return static_cast<double>(r) / 1000.0;
 }

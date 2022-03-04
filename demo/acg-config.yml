@@ -1,0 +1,12 @@
+window:
+  start-size:
+    x: 500
+    y: 500
+  fullscreen: false
+
+engine:
+  clear-color:
+    - 0.2
+    - 0.2
+    - 0.8
+  v-sync: false

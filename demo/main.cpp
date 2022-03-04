@@ -6,19 +6,17 @@
  */
 
 
-
 //////////////
 // #INCLUDE //
 //////////////
 
-   // Main engine header:
-   #include "engine.h"
+// Main engine header:
+#include "engine.h"
 
-   // C/C++:
-   #include <iostream>
-   #include <chrono>   
-   #include <thread>
-   
+// C/C++:
+#include <iostream>
+#include <chrono>
+#include <thread>
 
 
 ///////////////
@@ -33,7 +31,7 @@
  */
 void mouseCursorCallback(double mouseX, double mouseY)
 {
-   ENG_LOG_DEBUG("x: %.1f, y: %.1f", mouseX, mouseY);
+	ENG_LOG_DEBUG("x: %.1f, y: %.1f", mouseX, mouseY);
 }
 
 
@@ -46,7 +44,7 @@ void mouseCursorCallback(double mouseX, double mouseY)
  */
 void mouseButtonCallback(int button, int action, int mods)
 {
-   ENG_LOG_DEBUG("button: %d, action: %d, mods: %d", button, action, mods);
+	ENG_LOG_DEBUG("button: %d, action: %d, mods: %d", button, action, mods);
 }
 
 
@@ -58,7 +56,7 @@ void mouseButtonCallback(int button, int action, int mods)
  */
 void mouseScrollCallback(double scrollX, double scrollY)
 {
-   ENG_LOG_DEBUG("x: %.1f, y: %.1f", scrollX, scrollY);
+	ENG_LOG_DEBUG("x: %.1f, y: %.1f", scrollX, scrollY);
 }
 
 
@@ -72,9 +70,8 @@ void mouseScrollCallback(double scrollX, double scrollY)
  */
 void keyboardCallback(int key, int scancode, int action, int mods)
 {
-   ENG_LOG_DEBUG("key: %d, scancode: %d, action: %d, mods: %d", key, scancode, action, mods);
+	ENG_LOG_DEBUG("key: %d, scancode: %d, action: %d, mods: %d", key, scancode, action, mods);
 }
-
 
 
 //////////
@@ -87,43 +84,42 @@ void keyboardCallback(int key, int scancode, int action, int mods)
  * @param argv array containing up to argc passed arguments
  * @return error code (0 on success, error code otherwise)
  */
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-   // Credits:
-   std::cout << "Engine demo, A. Peternier (C) SUPSI" << std::endl;
-   std::cout << std::endl;
+	// Credits:
+	std::cout << "Engine demo, A. Peternier (C) SUPSI" << std::endl;
+	std::cout << std::endl;
 
-   // Init engine:
-   Eng::Base &eng = Eng::Base::getInstance();
-   eng.init();
+	// Init engine:
+	Eng::Base& eng = Eng::Base::getInstance();
+	eng.init();
 
-   // Time measurement example:
-   Eng::Timer &timer = Eng::Timer::getInstance();   
-   uint64_t startTime = timer.getCounter();   
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-   uint64_t endTime = timer.getCounter();   
-   std::cout << "Time elapsed: " << timer.getCounterDiff(startTime, endTime) << std::endl;
+	// Time measurement example:
+	Eng::Timer& timer = Eng::Timer::getInstance();
+	uint64_t startTime = timer.getCounter();
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	uint64_t endTime = timer.getCounter();
+	std::cout << "Time elapsed: " << timer.getCounterDiff(startTime, endTime) << std::endl;
 
-   // Register callbacks:
-   eng.setMouseCursorCallback(mouseCursorCallback);
-   eng.setMouseButtonCallback(mouseButtonCallback);
-   eng.setMouseScrollCallback(mouseScrollCallback);
-   eng.setKeyboardCallback(keyboardCallback);
+	// Register callbacks:
+	eng.setMouseCursorCallback(mouseCursorCallback);
+	eng.setMouseButtonCallback(mouseButtonCallback);
+	eng.setMouseScrollCallback(mouseScrollCallback);
+	eng.setKeyboardCallback(keyboardCallback);
 
-   // Main loop:
-   std::cout << "Entering main loop..." << std::endl;
-   while (eng.processEvents())
-   {
-      eng.clear();
-      eng.swap();
-   }
-   std::cout << "Leaving main loop..." << std::endl;
+	// Main loop:
+	std::cout << "Entering main loop..." << std::endl;
+	while (eng.processEvents())
+	{
+		eng.clear();
+		eng.swap();
+	}
+	std::cout << "Leaving main loop..." << std::endl;
 
-   // Release engine:
-   eng.free();
+	// Release engine:
+	eng.free();
 
-   // Done:
-   std::cout << "[application terminated]" << std::endl;
-   return 0;
+	// Done:
+	std::cout << "[application terminated]" << std::endl;
+	return 0;
 }
-
