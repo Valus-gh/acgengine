@@ -32,6 +32,29 @@
 void mouseCursorCallback(double mouseX, double mouseY)
 {
 	ENG_LOG_DEBUG("x: %.1f, y: %.1f", mouseX, mouseY);
+
+	static auto R = glm::identity<glm::mat4>();
+	static auto cOld = mouseX;
+
+	const auto cCurrent = mouseX;
+
+	if (cCurrent != cOld)
+	{
+
+		const auto degrees = (cCurrent - cOld > 0.0) ? 1.0f : -1.0f;
+		const auto rotate = glm::rotate(
+			glm::mat4{ 1.0f },
+			glm::radians(degrees),
+			glm::vec3{ 0.0f, 1.0f, 0.0f });
+
+		R *= rotate;
+
+		// to_string does not work with ENG_LOG
+		std::cout << glm::to_string(R);
+
+		cOld = cCurrent;
+
+	}
 }
 
 
@@ -71,8 +94,64 @@ void mouseScrollCallback(double scrollX, double scrollY)
 void keyboardCallback(int key, int scancode, int action, int mods)
 {
 	ENG_LOG_DEBUG("key: %d, scancode: %d, action: %d, mods: %d", key, scancode, action, mods);
+
+	static auto T = glm::identity<glm::mat4>();
+
+	if (key >= 262 && key <= 265)
+	{
+		auto translate = glm::mat4{};
+
+		switch (key)
+		{
+		case 262:
+			translate = glm::translate(glm::mat4{1.0f}, glm::vec3{1.0f, 0.0f, 0.0f});
+			T *= translate;
+			break;
+
+		case 263:
+			translate = glm::translate(glm::mat4{1.0f}, glm::vec3{-1.0f, 0.0f, 0.0f});
+			T *= translate;
+			break;
+
+		case 264:
+			translate = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, 0.0f, -1.0f});
+			T *= translate;
+			break;
+
+		case 265:
+			translate = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, 0.0f, 1.0f});
+			T *= translate;
+			break;
+		default: ;
+		}
+
+		// to_string does not work with ENG_LOG
+		std::cout << glm::to_string(T);
+	}
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Function to display FPS value to debug console every >3 seconds
+ */
+void displayFPS()
+{
+	static auto tStart = Eng::Timer::getInstance().getCounter();
+	static auto frames = Eng::Base::getInstance().getFrameNr();
+
+	auto tCurrent = Eng::Timer::getInstance().getCounter();
+	auto tDiff = Eng::Timer::getInstance().getCounterDiff(tStart, tCurrent);
+
+	if (tDiff >= 3000.0)
+	{
+		tStart = tCurrent;
+		auto fDiff = Eng::Base::getInstance().getFrameNr() - frames;
+		frames = Eng::Base::getInstance().getFrameNr();
+
+		ENG_LOG_DEBUG("FPS: %.3f", fDiff / (tDiff / 1000.0));
+	}
+}
 
 //////////
 // MAIN //
@@ -108,12 +187,16 @@ int main(int argc, char* argv[])
 	eng.setKeyboardCallback(keyboardCallback);
 
 	// Main loop:
+
 	std::cout << "Entering main loop..." << std::endl;
 	while (eng.processEvents())
 	{
 		eng.clear();
 		eng.swap();
+
+		displayFPS();
 	}
+
 	std::cout << "Leaving main loop..." << std::endl;
 
 	// Release engine:

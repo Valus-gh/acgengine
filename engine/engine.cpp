@@ -286,6 +286,7 @@ bool ENG_API Eng::Base::init()
 	glGetIntegerv(GL_MAJOR_VERSION, &oglVersion[0]);
 	glGetIntegerv(GL_MINOR_VERSION, &oglVersion[1]);
 	ENG_LOG_PLAIN("   Version  . . :  %s [%d.%d]", glGetString(GL_VERSION), oglVersion[0], oglVersion[1]);
+
 	if (glfwGetWindowAttrib(reserved->window, GLFW_CONTEXT_NO_ERROR))
 		ENG_LOG_PLAIN("   No error . . :  enabled");
 	else
@@ -342,7 +343,6 @@ bool ENG_API Eng::Base::init()
 	if(!reserved->properties->engine_properties.vsync)
 		glfwSwapInterval(0); // No V-sync
 
-
 	ENG_LOG_DEBUG("Clear color: %s", glm::to_string(clear_color));
 	glClearColor(clear_color.r, clear_color.g, clear_color.b, 1.0f);
 	glViewport(0, 0, reserved->windowSizeX, reserved->windowSizeY);
@@ -354,7 +354,7 @@ bool ENG_API Eng::Base::init()
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Not sure whether it is really global state
 
 	// Gosh!! Just to trigger the debug callback:
-	glLoadIdentity();
+	// glLoadIdentity();
 
 	// Done:
 	return true;

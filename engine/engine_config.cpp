@@ -34,7 +34,6 @@ ENG_API const Eng::Properties* Eng::YamlConfigurationParser::parse()
 	window["start-size"]["y"] >> config->window_properties.size_y;
 	window["fullscreen"] >> config->window_properties.fullscreen;
 
-
 	float r,g,b;
 
 	auto engine = tree["engine"];
@@ -49,15 +48,9 @@ ENG_API const Eng::Properties* Eng::YamlConfigurationParser::parse()
 
 ENG_API const Eng::Properties* Eng::EngineConfigurer::getConfiguration() const
 {
-	char* homedir = getenv("HOMEDRIVE");
 
-    const char* homepath = getenv("HOMEPATH");
-
-    homedir = (char*)malloc(strlen(homedir)+strlen(homepath)+1);
-
-    strcat(homedir, homepath);
-
-	std::string home{homedir};
+	std::string home{ getenv("HOMEDRIVE") };
+	home.append(getenv("HOMEPATH"));
 	std::string configPath;
 
 	std::ifstream f(home + "/.acg-config.yml");
@@ -71,7 +64,8 @@ ENG_API const Eng::Properties* Eng::EngineConfigurer::getConfiguration() const
 		ENG_LOG_INFO("Using bundled default config file");
 		configPath = "./acg-config.yml";
 	}
-	f.close();
+
+	if(f.is_open()) f.close();
 
 	YamlConfigurationParser parser(configPath);
 	return parser.parse();
