@@ -71,7 +71,7 @@ public: //
 	static bool log(level lvl, const char* filename, const char* functionName, int32_t codeLine, const char* text, ...);
 
 	// Parser proto:
-	using CustomCallbackProto = bool(*)(char* msg, level lvl, void* data);
+	typedef bool (*CustomCallbackProto)(char* msg, level lvl, void* data);
 
 	// Get/set:
 	static void setCustomCallback(CustomCallbackProto cb);

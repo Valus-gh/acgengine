@@ -17,7 +17,7 @@ public: //
 	//////////
 
 	// Const/dest:   
-	Timer(const Timer&) = delete;
+	Timer(Timer const&) = delete;
 	~Timer();
 
 	// Get/set:
@@ -25,7 +25,7 @@ public: //
 	double getCounterDiff(uint64_t t1, uint64_t t2) const;
 
 	// Operators:
-	void operator=(const Timer&) = delete;
+	void operator=(Timer const&) = delete;
 
 	// Singleton:
 	static Timer& getInstance();

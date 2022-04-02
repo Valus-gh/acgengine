@@ -19,7 +19,8 @@ struct ENG_API Properties
 	EngineProperties engine_properties;
 };
 
-class ENG_API IConfigurationParser{
+class ENG_API IConfigurationParser
+{
 public:
 	virtual ~IConfigurationParser() = default;
 	virtual const Eng::Properties* parse() = 0;
@@ -27,7 +28,7 @@ public:
 };
 
 
-class ENG_API YamlConfigurationParser: IConfigurationParser
+class ENG_API YamlConfigurationParser : IConfigurationParser
 {
 private:
 	std::string m_filePath;

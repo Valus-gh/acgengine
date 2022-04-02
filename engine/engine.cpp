@@ -42,9 +42,7 @@ struct Eng::Base::Reserved
 	Eng::Base::MouseButtonCallback mouseButtonCallback;
 	Eng::Base::MouseScrollCallback mouseScrollCallback;
 
-	// Properties
 	const Properties* properties;
-
 
 	/**
 	 * Constructor
@@ -54,10 +52,7 @@ struct Eng::Base::Reserved
 	             keyboardCallback{nullptr},
 	             mouseCursorCallback{nullptr},
 	             mouseButtonCallback{nullptr},
-	             mouseScrollCallback{nullptr},
-	             properties{nullptr}
-	{
-	}
+	             mouseScrollCallback{nullptr} {}
 };
 
 
@@ -201,7 +196,7 @@ bool ENG_API Eng::Base::init()
 
 	/////////////
 	// Init glfw:
-	using GLWF_ERROR_CALLBACK_PTR = void(*)(int32_t error, const char* description);
+	typedef void (* GLWF_ERROR_CALLBACK_PTR)(int32_t error, const char* description);
 	glfwSetErrorCallback(static_cast<GLWF_ERROR_CALLBACK_PTR>
 	(
 		// Callback:
@@ -234,8 +229,8 @@ bool ENG_API Eng::Base::init()
 #ifdef _DEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #else
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_FALSE);
-	glfwWindowHint(GLFW_CONTEXT_NO_ERROR, GLFW_TRUE);
+   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_FALSE);
+   glfwWindowHint(GLFW_CONTEXT_NO_ERROR, GLFW_TRUE);
 #endif
 	glfwWindowHint(GLFW_RED_BITS, 8);
 	glfwWindowHint(GLFW_BLUE_BITS, 8);
@@ -247,9 +242,10 @@ bool ENG_API Eng::Base::init()
 	reserved->window = glfwCreateWindow(
 		reserved->properties->window_properties.size_x,
 		reserved->properties->window_properties.size_y,
-		"demo",
+		"Demo",
 		nullptr,
 		nullptr);
+
 	if (reserved->window == nullptr)
 	{
 		ENG_LOG_ERROR("Unable to create window");
@@ -298,11 +294,16 @@ bool ENG_API Eng::Base::init()
 	ENG_LOG_PLAIN("   Extensions . :  %d", nrOfExtensions);
 
 	// Check for required extensions:
-	/*if (!glewIsSupported("GL_ARB_bindless_texture"))
+	if (!glewIsSupported("GL_ARB_bindless_texture"))
 	{
-	   ENG_LOG_ERROR("GL_ARB_bindless_texture not supported");
-	   return false;
-	}*/
+		ENG_LOG_ERROR("GL_ARB_bindless_texture not supported");
+		return false;
+	}
+	if (!glewIsSupported("GL_EXT_texture_compression_s3tc"))
+	{
+		ENG_LOG_ERROR("GL_EXT_texture_compression_s3tc not supported");
+		return false;
+	}
 
 	int workGroupSizes[3] = {0};
 	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &workGroupSizes[0]);
@@ -327,7 +328,8 @@ bool ENG_API Eng::Base::init()
 
 #if _DEBUG
 	// Query the OpenGL function to register your callback function:
-	auto _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)glfwGetProcAddress("glDebugMessageCallback");
+	auto _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)glfwGetProcAddress(
+		"glDebugMessageCallback");
 
 	// Register callback function:
 	if (_glDebugMessageCallback != nullptr)
@@ -338,13 +340,12 @@ bool ENG_API Eng::Base::init()
 	else
 		ENG_LOG_ERROR("Unable to register debug callback");
 #endif
+
 	glfwGetFramebufferSize(reserved->window, &reserved->windowSizeX, &reserved->windowSizeY);
 
-	if(!reserved->properties->engine_properties.vsync)
+	if (!reserved->properties->engine_properties.vsync)
 		glfwSwapInterval(0); // No V-sync
 
-	ENG_LOG_DEBUG("Clear color: %s", glm::to_string(clear_color));
-	glClearColor(clear_color.r, clear_color.g, clear_color.b, 1.0f);
 	glViewport(0, 0, reserved->windowSizeX, reserved->windowSizeY);
 
 	// Common OpenGL settings:
@@ -352,9 +353,6 @@ bool ENG_API Eng::Base::init()
 	glDepthFunc(GL_LEQUAL);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1); // Not sure whether it is really global state
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Not sure whether it is really global state
-
-	// Gosh!! Just to trigger the debug callback:
-	// glLoadIdentity();
 
 	// Done:
 	return true;
@@ -369,6 +367,9 @@ bool ENG_API Eng::Base::init()
 bool ENG_API Eng::Base::free()
 {
 	ENG_LOG_DEBUG("Releasing context...");
+
+	// Since the context is about to be released, unload all objects that are still allocated:
+	Managed::forceRelease();
 
 	// Release glfw:
 	if (reserved->window)
@@ -413,6 +414,8 @@ bool ENG_API Eng::Base::processEvents()
  */
 bool ENG_API Eng::Base::clear()
 {
+	auto color = reserved->properties->engine_properties.clear_color;
+	glClearColor(color.x, color.y, color.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Done:
@@ -465,7 +468,7 @@ bool ENG_API Eng::Base::setKeyboardCallback(KeyboardCallback cb)
 		                   // Callback:
 		                   [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		                   {
-			                   auto _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
+			                   Eng::Base* _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
 			                   _this->reserved->keyboardCallback(key, scancode, action, mods);
 		                   }
 	                   ));
@@ -491,7 +494,7 @@ bool ENG_API Eng::Base::setMouseCursorCallback(MouseCursorCallback cb)
 		                         // Callback:
 		                         [](GLFWwindow* window, double mouseX, double mouseY)
 		                         {
-			                         auto _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
+			                         Eng::Base* _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
 			                         _this->reserved->mouseCursorCallback(mouseX, mouseY);
 		                         }
 	                         ));
@@ -517,7 +520,7 @@ bool ENG_API Eng::Base::setMouseButtonCallback(MouseButtonCallback cb)
 		                           // Callback:
 		                           [](GLFWwindow* window, int button, int action, int mods)
 		                           {
-			                           auto _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
+			                           Eng::Base* _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
 			                           _this->reserved->mouseButtonCallback(button, action, mods);
 		                           }
 	                           ));
@@ -543,7 +546,7 @@ bool ENG_API Eng::Base::setMouseScrollCallback(MouseScrollCallback cb)
 		                      // Callback:
 		                      [](GLFWwindow* window, double scrollX, double scrollY)
 		                      {
-			                      auto _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
+			                      Eng::Base* _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
 			                      _this->reserved->mouseScrollCallback(scrollX, scrollY);
 		                      }
 	                      ));

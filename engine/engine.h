@@ -29,6 +29,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/packing.hpp>
 
 
 /////////////
@@ -62,9 +63,40 @@ namespace Eng
 	// Logging:
 #include "engine_log.h"
 
-	// Extra stuff:
-#include "engine_timer.h"
+	// Configuration
 #include "engine_config.h"
+#include "engine_timer.h"
+
+	// Architecture:
+#include "engine_object.h"
+#include "engine_managed.h"
+
+	// File formats:
+#include "engine_serializer.h"
+#include "engine_bitmap.h"
+#include "engine_ovo.h"
+
+	// Objects:
+#include "engine_vao.h"
+#include "engine_vbo.h"
+#include "engine_ebo.h"
+#include "engine_shader.h"
+#include "engine_program.h"
+#include "engine_texture.h"
+#include "engine_material.h"
+
+	// Scene-graph elems:
+#include "engine_node.h"
+#include "engine_mesh.h"
+#include "engine_light.h"
+#include "engine_list.h"
+
+	// Storage:
+#include "engine_container.h"
+
+	// Pipelines:
+#include "engine_pipeline.h"
+#include "engine_pipeline_default.h"
 
 
 	///////////////////////
@@ -81,17 +113,17 @@ namespace Eng
 		//////////	   
 
 		// Callback signatures:
-		using KeyboardCallback = void(*)(int key, int scancode, int action, int mods);
-		using MouseCursorCallback = void(*)(double mouseX, double mouseY);
-		using MouseButtonCallback = void(*)(int button, int action, int mods);
-		using MouseScrollCallback = void(*)(double scrollX, double scrollY);
+		typedef void (* KeyboardCallback)(int key, int scancode, int action, int mods);
+		typedef void (* MouseCursorCallback)(double mouseX, double mouseY);
+		typedef void (* MouseButtonCallback)(int button, int action, int mods);
+		typedef void (* MouseScrollCallback)(double scrollX, double scrollY);
 
 		// Const/dest:
-		Base(const Base&) = delete;
+		Base(Base const&) = delete;
 		virtual ~Base();
 
 		// Operators:
-		void operator=(const Base&) = delete;
+		void operator=(Base const&) = delete;
 
 		// Singleton:
 		static Base& getInstance();

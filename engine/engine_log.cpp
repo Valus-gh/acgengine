@@ -38,9 +38,7 @@ struct Eng::Log::StaticReserved
 	/**
 	 * Constructor.
 	 */
-	StaticReserved() : customCallback{nullptr}
-	{
-	}
+	StaticReserved() : customCallback{nullptr} {}
 };
 
 
@@ -77,6 +75,8 @@ bool ENG_API Eng::Log::init()
 	// Add shutdown hook:
 	atexit([]()
 	{
+		if (Eng::Object::getNrOfObjects() != 0)
+			ENG_LOG_ERROR("Memory leak detected (parity check returned %d)", Eng::Object::getNrOfObjects());
 		Eng::Log::free();
 	});
 
@@ -149,31 +149,31 @@ bool ENG_API Eng::Log::log(level lvl, const char* fileName, const char* function
 	bool returnMessage = true;
 	switch (lvl)
 	{
-	/////////////////////
+		/////////////////////
 	case level::plain: //
 		sprintf_s(prefix, "%s", "");
 		returnMessage = true;
 		break;
 
-	////////////////////
+		////////////////////
 	case level::info: //
 		sprintf_s(prefix, "%s ", "[*]");
 		returnMessage = true;
 		break;
 
-	///////////////////////
+		///////////////////////
 	case level::warning: //
 		sprintf_s(prefix, "%s [%s] ", "[?]", functionName);
 		returnMessage = true;
 		break;
 
-	/////////////////////
+		/////////////////////
 	case level::error: //
 		sprintf_s(prefix, "%s [%s, %s:%d] ", "[!]", fileName, functionName, codeLine);
 		returnMessage = false;
 		break;
 
-	//////////////////////
+		//////////////////////
 	case level::debug: //
 	case level::detail: //
 		sprintf_s(prefix, "%s [%s:%d] ", "[D]", functionName, codeLine);
