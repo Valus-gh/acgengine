@@ -6,20 +6,22 @@
  */
 
 
+
 //////////////
 // #INCLUDE //
 //////////////
 
-// Main include:
-#include "engine.h"
+   // Main include:
+   #include "engine.h"
 
-// OGL:      
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+   // OGL:      
+   #include <GL/glew.h>
+   #include <GLFW/glfw3.h>
 
-// C/C++:
-#include <sstream>
+   // C/C++:
+   #include <sstream>   
 
+   
 
 /////////////////////////
 // RESERVED STRUCTURES //
@@ -29,36 +31,32 @@
  * @brief Base class reserved structure.
  */
 struct Eng::Base::Reserved
-{
-	GLFWwindow* window; ///< Window handler
-	int32_t windowSizeX, windowSizeY; ///< Window width and height
+{   
+   GLFWwindow *window;                 ///< Window handler
+   int32_t windowSizeX, windowSizeY;   ///< Window width and height
 
-	// Some counters:
-	int64_t frameCounter; ///< Total number of rendered frames   
+   // Some counters:
+   int64_t frameCounter;               ///< Total number of rendered frames   
 
-	// Callbacks:
-	Eng::Base::KeyboardCallback keyboardCallback;
-	Eng::Base::MouseCursorCallback mouseCursorCallback;
-	Eng::Base::MouseButtonCallback mouseButtonCallback;
-	Eng::Base::MouseScrollCallback mouseScrollCallback;
-
-	// Properties
-	const Properties* properties;
+   // Callbacks:
+   Eng::Base::KeyboardCallback keyboardCallback;
+   Eng::Base::MouseCursorCallback mouseCursorCallback;
+   Eng::Base::MouseButtonCallback mouseButtonCallback;
+   Eng::Base::MouseScrollCallback mouseScrollCallback;
 
 
-	/**
-	 * Constructor
-	 */
-	Reserved() : window{nullptr}, windowSizeX{0}, windowSizeY{0},
-	             frameCounter{0},
-	             keyboardCallback{nullptr},
-	             mouseCursorCallback{nullptr},
-	             mouseButtonCallback{nullptr},
-	             mouseScrollCallback{nullptr},
-	             properties{nullptr}
-	{
-	}
+   /**
+    * Constructor
+    */
+   Reserved() : window{ nullptr }, windowSizeX{ 0 }, windowSizeY{ 0 },
+                frameCounter{ 0 },
+                keyboardCallback{ nullptr },
+                mouseCursorCallback{ nullptr },
+                mouseButtonCallback{ nullptr },
+                mouseScrollCallback{ nullptr }
+   {}
 };
+
 
 
 ////////////
@@ -70,64 +68,50 @@ struct Eng::Base::Reserved
  * Debug message parser for OpenGL.
  * @return formatted string for logging
  */
-static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, const char* msg)
+static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, const char *msg)
 {
-	std::stringstream stringStream;
-	std::string sourceString;
-	std::string typeString;
-	std::string severityString;
+   std::stringstream stringStream;
+   std::string sourceString;
+   std::string typeString;
+   std::string severityString;
 
-	switch (source)
-	{
-	case GL_DEBUG_SOURCE_API: sourceString = "API";
-		break;
-	case GL_DEBUG_SOURCE_APPLICATION: sourceString = "Application";
-		break;
-	case GL_DEBUG_SOURCE_WINDOW_SYSTEM: sourceString = "Window System";
-		break;
-	case GL_DEBUG_SOURCE_SHADER_COMPILER: sourceString = "Shader Compiler";
-		break;
-	case GL_DEBUG_SOURCE_THIRD_PARTY: sourceString = "Third Party";
-		break;
-	case GL_DEBUG_SOURCE_OTHER: sourceString = "Other";
-		break;
-	default: sourceString = "Unknown";
-	}
+   switch (source)
+   {
+      case GL_DEBUG_SOURCE_API:              sourceString = "API"; break;
+      case GL_DEBUG_SOURCE_APPLICATION:      sourceString = "Application"; break;
+      case GL_DEBUG_SOURCE_WINDOW_SYSTEM:    sourceString = "Window System"; break;
+      case GL_DEBUG_SOURCE_SHADER_COMPILER:  sourceString = "Shader Compiler"; break;
+      case GL_DEBUG_SOURCE_THIRD_PARTY:      sourceString = "Third Party"; break;
+      case GL_DEBUG_SOURCE_OTHER:            sourceString = "Other"; break;
+      default:                               sourceString = "Unknown";
+   }
 
-	switch (type)
-	{
-	case GL_DEBUG_TYPE_ERROR: typeString = "Error";
-		break;
-	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeString = "Deprecated Behavior";
-		break;
-	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeString = "Undefined Behavior";
-		break;
-	case GL_DEBUG_TYPE_PERFORMANCE: typeString = "Performance";
-		break;
-	case GL_DEBUG_TYPE_OTHER: typeString = "Other";
-		break;
-	default: typeString = "Unknown";
-	}
+   switch (type)
+   {
+      case GL_DEBUG_TYPE_ERROR:                 typeString = "Error"; break;
+      case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:   typeString = "Deprecated Behavior"; break;
+      case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:    typeString = "Undefined Behavior"; break;
+      case GL_DEBUG_TYPE_PERFORMANCE:           typeString = "Performance"; break;
+      case GL_DEBUG_TYPE_OTHER:                 typeString = "Other"; break;
+      default:                                  typeString = "Unknown";
+   }
 
-	switch (severity)
-	{
-	case GL_DEBUG_SEVERITY_HIGH: severityString = "High";
-		break;
-	case GL_DEBUG_SEVERITY_MEDIUM: severityString = "Medium";
-		break;
-	case GL_DEBUG_SEVERITY_LOW: severityString = "Low";
-		break;
-	default: severityString = "Unknown";
-	}
+   switch (severity)
+   {
+      case GL_DEBUG_SEVERITY_HIGH:     severityString = "High"; break;
+      case GL_DEBUG_SEVERITY_MEDIUM:   severityString = "Medium"; break;
+      case GL_DEBUG_SEVERITY_LOW:      severityString = "Low"; break;
+      default:                         severityString = "Unknown";
+   }
 
-	stringStream << "[OGL] " << msg;
-	stringStream << " [Source = " << sourceString;
-	stringStream << ", Type = " << typeString;
-	stringStream << ", Severity = " << severityString;
-	stringStream << ", ID = " << id << "]";
+   stringStream << "[OGL] " << msg;
+   stringStream << " [Source = " << sourceString;
+   stringStream << ", Type = " << typeString;
+   stringStream << ", Severity = " << severityString;
+   stringStream << ", ID = " << id << "]";
 
-	// Done:
-	return stringStream.str();
+   // Done:
+   return stringStream.str();
 }
 
 
@@ -135,19 +119,19 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 /**
  * Debug message callback for OpenGL.
  */
-static void __stdcall DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-                                    const GLchar* message, GLvoid* userParam)
+static void __stdcall DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam)
 {
-	std::string error = FormatDebugOutput(source, type, id, severity, message);
-	if (type == GL_DEBUG_TYPE_ERROR)
-	{
-		ENG_LOG_ERROR("%s", error.c_str());
-	}
-	else
-	{
-		ENG_LOG_INFO("%s", error.c_str());
-	}
+   std::string error = FormatDebugOutput(source, type, id, severity, message);
+   if (type == GL_DEBUG_TYPE_ERROR)
+   {
+      ENG_LOG_ERROR("%s", error.c_str());
+   }
+   else
+   {
+      ENG_LOG_INFO("%s", error.c_str());
+   }
 }
+
 
 
 ////////////////////////
@@ -160,7 +144,7 @@ static void __stdcall DebugCallback(GLenum source, GLenum type, GLuint id, GLenu
  */
 ENG_API Eng::Base::Base() : reserved(std::make_unique<Eng::Base::Reserved>())
 {
-	ENG_LOG_DEBUG("[+]");
+   ENG_LOG_DEBUG("[+]");   
 }
 
 
@@ -170,7 +154,7 @@ ENG_API Eng::Base::Base() : reserved(std::make_unique<Eng::Base::Reserved>())
  */
 ENG_API Eng::Base::~Base()
 {
-	ENG_LOG_DEBUG("[-]");
+   ENG_LOG_DEBUG("[-]");   
 }
 
 
@@ -178,10 +162,10 @@ ENG_API Eng::Base::~Base()
 /**
  * Get singleton instance.
  */
-Eng::Base ENG_API& Eng::Base::getInstance()
+Eng::Base ENG_API &Eng::Base::getInstance()
 {
-	static Base instance;
-	return instance;
+   static Base instance;
+   return instance;
 }
 
 
@@ -192,172 +176,158 @@ Eng::Base ENG_API& Eng::Base::getInstance()
  * @return TF
  */
 bool ENG_API Eng::Base::init()
-{
-	/////////////
-	// Parse config:
-	EngineConfigurer configurer;
-	this->reserved->properties = configurer.getConfiguration();
-	glm::vec3 clear_color = reserved->properties->engine_properties.clear_color;
+{  
+   /////////////
+   // Init glfw:
+   typedef void(* GLWF_ERROR_CALLBACK_PTR)(int32_t error, const char *description);
+   glfwSetErrorCallback(static_cast<GLWF_ERROR_CALLBACK_PTR>
+   (
+      // Callback:
+      [](int32_t error, const char *description)
+      {
+         ENG_LOG_ERROR("[GLFW] code: %d, %s", error, description);
+      }
+   ));
 
-	/////////////
-	// Init glfw:
-	using GLWF_ERROR_CALLBACK_PTR = void(*)(int32_t error, const char* description);
-	glfwSetErrorCallback(static_cast<GLWF_ERROR_CALLBACK_PTR>
-	(
-		// Callback:
-		[](int32_t error, const char* description)
-		{
-			ENG_LOG_ERROR("[GLFW] code: %d, %s", error, description);
-		}
-	));
+   // Init framework:
+   if (!glfwInit())
+   {
+      ENG_LOG_ERROR("Unable to init GLFW");
+      return false;
+   }
 
-	// Init framework:
-	if (!glfwInit())
-	{
-		ENG_LOG_ERROR("Unable to init GLFW");
-		return false;
-	}
+   int32_t glfwMajor, glfwMinor, glfwRev;
+   glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
+   ENG_LOG_PLAIN("   Using GLFW v%d.%d.%d", glfwMajor, glfwMinor, glfwRev);
 
-	int32_t glfwMajor, glfwMinor, glfwRev;
-	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
-	ENG_LOG_PLAIN("   Using GLFW v%d.%d.%d", glfwMajor, glfwMinor, glfwRev);
-
-	// Open an OpenGL window:      
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-	glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+   // Open an OpenGL window:      
+   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+   glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef _DEBUG
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #else
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_FALSE);
-	glfwWindowHint(GLFW_CONTEXT_NO_ERROR, GLFW_TRUE);
+   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_FALSE);
+   glfwWindowHint(GLFW_CONTEXT_NO_ERROR, GLFW_TRUE);
 #endif
-	glfwWindowHint(GLFW_RED_BITS, 8);
-	glfwWindowHint(GLFW_BLUE_BITS, 8);
-	glfwWindowHint(GLFW_GREEN_BITS, 8);
-	glfwWindowHint(GLFW_ALPHA_BITS, 8);
-	glfwWindowHint(GLFW_DEPTH_BITS, 24);
-	glfwWindowHint(GLFW_STENCIL_BITS, 8);
+   glfwWindowHint(GLFW_RED_BITS, 8);
+   glfwWindowHint(GLFW_BLUE_BITS, 8);
+   glfwWindowHint(GLFW_GREEN_BITS, 8);
+   glfwWindowHint(GLFW_ALPHA_BITS, 8);
+   glfwWindowHint(GLFW_DEPTH_BITS, 24);
+   glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
-	reserved->window = glfwCreateWindow(
-		reserved->properties->window_properties.size_x,
-		reserved->properties->window_properties.size_y,
-		"demo",
-		nullptr,
-		nullptr);
-	if (reserved->window == nullptr)
-	{
-		ENG_LOG_ERROR("Unable to create window");
-		return false;
-	}
-	glfwSetWindowUserPointer(reserved->window, this);
+   reserved->window = glfwCreateWindow(1024, 768,
+                                       "demo",
+                                       nullptr,
+                                       nullptr);
+   if (reserved->window == nullptr)
+   {
+      ENG_LOG_ERROR("Unable to create window");
+      return false;
+   }
+   glfwSetWindowUserPointer(reserved->window, this);
 
-	// Set context:
-	glfwMakeContextCurrent(reserved->window);
+   // Set context:
+   glfwMakeContextCurrent(reserved->window);
 
-	// Glew:
-	glewExperimental = GL_TRUE;
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		ENG_LOG_ERROR("Unable to init GLEW");
-		return false;;
-	}
-	ENG_LOG_PLAIN("   Using GLEW v%s.%s.%s", glewGetString(GLEW_VERSION_MAJOR), glewGetString(GLEW_VERSION_MINOR),
-	              glewGetString(GLEW_VERSION_MICRO));
+   // Glew:
+   glewExperimental = GL_TRUE;
+   GLenum err = glewInit();
+   if (GLEW_OK != err)
+   {
+      ENG_LOG_ERROR("Unable to init GLEW");
+      return false;;
+   }
+   ENG_LOG_PLAIN("   Using GLEW v%s.%s.%s", glewGetString(GLEW_VERSION_MAJOR), glewGetString(GLEW_VERSION_MINOR), glewGetString(GLEW_VERSION_MICRO));
+   if (!glewIsSupported("GL_VERSION_4_6"))
+   {
+      ENG_LOG_ERROR("OpenGL 4.6 not supported");
+      return false;
+   }
 
-	if (!glewIsSupported("GL_VERSION_4_6"))
-	{
-		ENG_LOG_ERROR("OpenGL 4.6 not supported");
-		//return false;
-	}
+   // Log and validate supported settings:
+   ENG_LOG_PLAIN("OpenGL properties:");
+   ENG_LOG_PLAIN("   Vendor . . . :  %s", glGetString(GL_VENDOR));
+   ENG_LOG_PLAIN("   Driver . . . :  %s", glGetString(GL_RENDERER));
 
-	// Log and validate supported settings:
-	ENG_LOG_PLAIN("OpenGL properties:");
-	ENG_LOG_PLAIN("   Vendor . . . :  %s", glGetString(GL_VENDOR));
-	ENG_LOG_PLAIN("   Driver . . . :  %s", glGetString(GL_RENDERER));
+   int32_t oglVersion[2];
+   glGetIntegerv(GL_MAJOR_VERSION, &oglVersion[0]);
+   glGetIntegerv(GL_MINOR_VERSION, &oglVersion[1]);
+   ENG_LOG_PLAIN("   Version  . . :  %s [%d.%d]", glGetString(GL_VERSION), oglVersion[0], oglVersion[1]);
+   if (glfwGetWindowAttrib(reserved->window, GLFW_CONTEXT_NO_ERROR))
+      ENG_LOG_PLAIN("   No error . . :  enabled");
+   else
+      ENG_LOG_PLAIN("   No error . . :  disabled");      
+   ENG_LOG_PLAIN("   GLSL . . . . :  %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-	int32_t oglVersion[2];
-	glGetIntegerv(GL_MAJOR_VERSION, &oglVersion[0]);
-	glGetIntegerv(GL_MINOR_VERSION, &oglVersion[1]);
-	ENG_LOG_PLAIN("   Version  . . :  %s [%d.%d]", glGetString(GL_VERSION), oglVersion[0], oglVersion[1]);
+   int32_t nrOfExtensions;
+   glGetIntegerv(GL_NUM_EXTENSIONS, &nrOfExtensions);
+   ENG_LOG_PLAIN("   Extensions . :  %d", nrOfExtensions);
 
-	if (glfwGetWindowAttrib(reserved->window, GLFW_CONTEXT_NO_ERROR))
-		ENG_LOG_PLAIN("   No error . . :  enabled");
-	else
-		ENG_LOG_PLAIN("   No error . . :  disabled");
-	ENG_LOG_PLAIN("   GLSL . . . . :  %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+   // Check for required extensions:
+   if (!glewIsSupported("GL_ARB_bindless_texture"))
+   {
+      ENG_LOG_ERROR("GL_ARB_bindless_texture not supported");
+      return false;
+   }
+   if (!glewIsSupported("GL_EXT_texture_compression_s3tc"))
+   {
+      ENG_LOG_ERROR("GL_EXT_texture_compression_s3tc not supported");
+      return false;
+   }
 
-	int32_t nrOfExtensions;
-	glGetIntegerv(GL_NUM_EXTENSIONS, &nrOfExtensions);
-	ENG_LOG_PLAIN("   Extensions . :  %d", nrOfExtensions);
+   int workGroupSizes[3] = { 0 };
+   glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &workGroupSizes[0]);
+   glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &workGroupSizes[1]);
+   glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &workGroupSizes[2]);
+   int workGroupCounts[3] = { 0 };
+   glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &workGroupCounts[0]);
+   glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &workGroupCounts[1]);
+   glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &workGroupCounts[2]);
 
-	// Check for required extensions:
-	/*if (!glewIsSupported("GL_ARB_bindless_texture"))
-	{
-	   ENG_LOG_ERROR("GL_ARB_bindless_texture not supported");
-	   return false;
-	}*/
+   ENG_LOG_PLAIN("   Max group sz :  %d, %d, %d", workGroupSizes[0], workGroupSizes[1], workGroupSizes[2]);
+   ENG_LOG_PLAIN("   Max group cnt:  %d, %d, %d", workGroupCounts[0], workGroupCounts[1], workGroupCounts[2]);
 
-	int workGroupSizes[3] = {0};
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &workGroupSizes[0]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &workGroupSizes[1]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &workGroupSizes[2]);
-	int workGroupCounts[3] = {0};
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &workGroupCounts[0]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &workGroupCounts[1]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &workGroupCounts[2]);
-
-	ENG_LOG_PLAIN("   Max group sz :  %d, %d, %d", workGroupSizes[0], workGroupSizes[1], workGroupSizes[2]);
-	ENG_LOG_PLAIN("   Max group cnt:  %d, %d, %d", workGroupCounts[0], workGroupCounts[1], workGroupCounts[2]);
-
-	float maxAnisotropy = 0.0f;
-	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAnisotropy);
-	ENG_LOG_PLAIN("   Max anistropy:  %.1f", maxAnisotropy);
-	if (maxAnisotropy < 16.0f)
-	{
-		ENG_LOG_ERROR("Anistropic filter level 16 or higher not supported");
-		return false;
-	}
+   float maxAnisotropy = 0.0f;
+   glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAnisotropy);
+   ENG_LOG_PLAIN("   Max anistropy:  %.1f", maxAnisotropy);
+   if (maxAnisotropy < 16.0f)
+   {
+      ENG_LOG_ERROR("Anistropic filter level 16 or higher not supported");
+      return false;
+   }
 
 #if _DEBUG
-	// Query the OpenGL function to register your callback function:
-	auto _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)glfwGetProcAddress("glDebugMessageCallback");
+   // Query the OpenGL function to register your callback function:
+   PFNGLDEBUGMESSAGECALLBACKPROC _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)glfwGetProcAddress("glDebugMessageCallback");
 
-	// Register callback function:
-	if (_glDebugMessageCallback != nullptr)
-	{
-		_glDebugMessageCallback((GLDEBUGPROC)DebugCallback, nullptr);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	}
-	else
-		ENG_LOG_ERROR("Unable to register debug callback");
-#endif
-	glfwGetFramebufferSize(reserved->window, &reserved->windowSizeX, &reserved->windowSizeY);
+   // Register callback function:
+   if (_glDebugMessageCallback != nullptr)
+   {
+      _glDebugMessageCallback((GLDEBUGPROC)DebugCallback, nullptr);
+      glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+   }
+   else
+      ENG_LOG_ERROR("Unable to register debug callback");
+#endif   
+   glfwGetFramebufferSize(reserved->window, &reserved->windowSizeX, &reserved->windowSizeY);
+   glfwSwapInterval(0); // No V-sync
+   glViewport(0, 0, reserved->windowSizeX, reserved->windowSizeY);
 
-	if(!reserved->properties->engine_properties.vsync)
-		glfwSwapInterval(0); // No V-sync
+   // Common OpenGL settings:
+   glEnable(GL_DEPTH_TEST);
+   glDepthFunc(GL_LEQUAL);
+   glPixelStorei(GL_PACK_ALIGNMENT, 1);         // Not sure whether it is really global state
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);       // Not sure whether it is really global state
 
-	ENG_LOG_DEBUG("Clear color: %s", glm::to_string(clear_color));
-	glClearColor(clear_color.r, clear_color.g, clear_color.b, 1.0f);
-	glViewport(0, 0, reserved->windowSizeX, reserved->windowSizeY);
-
-	// Common OpenGL settings:
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glPixelStorei(GL_PACK_ALIGNMENT, 1); // Not sure whether it is really global state
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Not sure whether it is really global state
-
-	// Gosh!! Just to trigger the debug callback:
-	// glLoadIdentity();
-
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -368,23 +338,26 @@ bool ENG_API Eng::Base::init()
  */
 bool ENG_API Eng::Base::free()
 {
-	ENG_LOG_DEBUG("Releasing context...");
+   ENG_LOG_DEBUG("Releasing context...");
 
-	// Release glfw:
-	if (reserved->window)
-	{
-		// Release OGL resources:      
-		// ...
+   // Since the context is about to be released, unload all objects that are still allocated:
+   Managed::forceRelease();
 
-		glfwDestroyWindow(reserved->window);
-		reserved->window = nullptr;
-	}
-	glfwTerminate();
+   // Release glfw:
+   if (reserved->window)
+   {
+      // Release OGL resources:      
+      // ...
 
-	ENG_LOG_PLAIN("   Context deinitialized");
+      glfwDestroyWindow(reserved->window);
+      reserved->window = nullptr;
+   }
+   glfwTerminate();
 
-	// Done:
-	return true;
+   ENG_LOG_PLAIN("   Context deinitialized");
+
+   // Done:
+   return true;
 }
 
 
@@ -395,14 +368,14 @@ bool ENG_API Eng::Base::free()
  */
 bool ENG_API Eng::Base::processEvents()
 {
-	glfwPollEvents();
+   glfwPollEvents();
 
-	// Window shall be closed?
-	if (glfwWindowShouldClose(reserved->window))
-		return false;
+   // Window shall be closed?
+   if (glfwWindowShouldClose(reserved->window))
+      return false;
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -413,10 +386,11 @@ bool ENG_API Eng::Base::processEvents()
  */
 bool ENG_API Eng::Base::clear()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   glClearColor(1.0f, 0.6f, 0.1f, 1.0f);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -427,14 +401,14 @@ bool ENG_API Eng::Base::clear()
  */
 bool ENG_API Eng::Base::swap()
 {
-	// ENG_LOG_DEBUG("Finished with frame %llu", reserved->frameCounter);
-	glfwSwapBuffers(reserved->window);
+   // ENG_LOG_DEBUG("Finished with frame %llu", reserved->frameCounter);
+   glfwSwapBuffers(reserved->window);
 
-	// New frame:
-	reserved->frameCounter++;
+   // New frame:
+   reserved->frameCounter++;
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -445,7 +419,7 @@ bool ENG_API Eng::Base::swap()
  */
 uint64_t ENG_API Eng::Base::getFrameNr() const
 {
-	return reserved->frameCounter;
+   return reserved->frameCounter;
 }
 
 
@@ -457,21 +431,21 @@ uint64_t ENG_API Eng::Base::getFrameNr() const
  */
 bool ENG_API Eng::Base::setKeyboardCallback(KeyboardCallback cb)
 {
-	reserved->keyboardCallback = cb;
+   reserved->keyboardCallback = cb;
 
-	// Register callbacks:
-	glfwSetKeyCallback(reserved->window, static_cast<GLFWkeyfun>
-	                   (
-		                   // Callback:
-		                   [](GLFWwindow* window, int key, int scancode, int action, int mods)
-		                   {
-			                   auto _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
-			                   _this->reserved->keyboardCallback(key, scancode, action, mods);
-		                   }
-	                   ));
+   // Register callbacks:
+   glfwSetKeyCallback(reserved->window, static_cast<GLFWkeyfun>
+   (
+      // Callback:
+      [](GLFWwindow *window, int key, int scancode, int action, int mods)
+      {
+         Eng::Base *_this = static_cast<Eng::Base *>(glfwGetWindowUserPointer(window));
+         _this->reserved->keyboardCallback(key, scancode, action, mods);
+      }
+   ));
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -483,21 +457,21 @@ bool ENG_API Eng::Base::setKeyboardCallback(KeyboardCallback cb)
  */
 bool ENG_API Eng::Base::setMouseCursorCallback(MouseCursorCallback cb)
 {
-	reserved->mouseCursorCallback = cb;
+   reserved->mouseCursorCallback = cb;
 
-	// Register callbacks:
-	glfwSetCursorPosCallback(reserved->window, static_cast<GLFWcursorposfun>
-	                         (
-		                         // Callback:
-		                         [](GLFWwindow* window, double mouseX, double mouseY)
-		                         {
-			                         auto _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
-			                         _this->reserved->mouseCursorCallback(mouseX, mouseY);
-		                         }
-	                         ));
+   // Register callbacks:
+   glfwSetCursorPosCallback(reserved->window, static_cast<GLFWcursorposfun>
+   (
+      // Callback:
+      [](GLFWwindow *window, double mouseX, double mouseY)
+      {
+         Eng::Base *_this = static_cast<Eng::Base *>(glfwGetWindowUserPointer(window));
+         _this->reserved->mouseCursorCallback(mouseX, mouseY);
+      }
+   ));
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -509,21 +483,21 @@ bool ENG_API Eng::Base::setMouseCursorCallback(MouseCursorCallback cb)
  */
 bool ENG_API Eng::Base::setMouseButtonCallback(MouseButtonCallback cb)
 {
-	reserved->mouseButtonCallback = cb;
+   reserved->mouseButtonCallback = cb;
 
-	// Register callbacks:
-	glfwSetMouseButtonCallback(reserved->window, static_cast<GLFWmousebuttonfun>
-	                           (
-		                           // Callback:
-		                           [](GLFWwindow* window, int button, int action, int mods)
-		                           {
-			                           auto _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
-			                           _this->reserved->mouseButtonCallback(button, action, mods);
-		                           }
-	                           ));
+   // Register callbacks:
+   glfwSetMouseButtonCallback(reserved->window, static_cast<GLFWmousebuttonfun>
+   (
+      // Callback:
+      [](GLFWwindow *window, int button, int action, int mods)
+      {
+         Eng::Base *_this = static_cast<Eng::Base *>(glfwGetWindowUserPointer(window));
+         _this->reserved->mouseButtonCallback(button, action, mods);
+      }
+   ));
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -535,19 +509,19 @@ bool ENG_API Eng::Base::setMouseButtonCallback(MouseButtonCallback cb)
  */
 bool ENG_API Eng::Base::setMouseScrollCallback(MouseScrollCallback cb)
 {
-	reserved->mouseScrollCallback = cb;
+   reserved->mouseScrollCallback = cb;
 
-	// Register callbacks:
-	glfwSetScrollCallback(reserved->window, static_cast<GLFWscrollfun>
-	                      (
-		                      // Callback:
-		                      [](GLFWwindow* window, double scrollX, double scrollY)
-		                      {
-			                      auto _this = static_cast<Eng::Base*>(glfwGetWindowUserPointer(window));
-			                      _this->reserved->mouseScrollCallback(scrollX, scrollY);
-		                      }
-	                      ));
+   // Register callbacks:
+   glfwSetScrollCallback(reserved->window, static_cast<GLFWscrollfun>
+   (
+      // Callback:
+      [](GLFWwindow *window, double scrollX, double scrollY)
+      {
+         Eng::Base *_this = static_cast<Eng::Base *>(glfwGetWindowUserPointer(window));
+         _this->reserved->mouseScrollCallback(scrollX, scrollY);
+      }
+   ));
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }

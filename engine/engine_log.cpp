@@ -6,19 +6,21 @@
  */
 
 
+
 //////////////
 // #INCLUDE //
 //////////////
 
-// Main include:
-#include "engine.h"
+   // Main include:
+   #include "engine.h"
 
-// C/C++ libs:
-#include <stdarg.h>
-#include <stdio.h>
-#include <iostream>
-#include <fstream>
-#include <mutex>
+   // C/C++ libs:
+   #include <stdarg.h>
+   #include <stdio.h>
+   #include <iostream>
+   #include <fstream> 
+   #include <mutex>   
+
 
 
 /////////////////////////
@@ -30,17 +32,16 @@
  */
 struct Eng::Log::StaticReserved
 {
-	std::ofstream outputFile; ///< Textual output file
-	std::recursive_mutex mutex; ///< Mutex to enable concurrent writing   
-	CustomCallbackProto customCallback; ///< Optional callback invoked after each message
+   std::ofstream outputFile;              ///< Textual output file
+   std::recursive_mutex mutex;            ///< Mutex to enable concurrent writing   
+   CustomCallbackProto customCallback;    ///< Optional callback invoked after each message
 
 
-	/**
-	 * Constructor.
-	 */
-	StaticReserved() : customCallback{nullptr}
-	{
-	}
+   /**
+    * Constructor.
+    */
+   StaticReserved() : customCallback{ nullptr }
+   {}
 };
 
 
@@ -48,9 +49,9 @@ struct Eng::Log::StaticReserved
 // STATIC //
 ////////////   
 
-// Reserved data:
-Eng::Log::StaticReserved* Eng::Log::staticReserved = nullptr;
-// No unique_ptr, as the pointer might go out of scope *before* the atexit invocation!
+   // Reserved data:
+   Eng::Log::StaticReserved *Eng::Log::staticReserved = nullptr; // No unique_ptr, as the pointer might go out of scope *before* the atexit invocation!
+
 
 
 ///////////////////////
@@ -64,31 +65,33 @@ Eng::Log::StaticReserved* Eng::Log::staticReserved = nullptr;
  */
 bool ENG_API Eng::Log::init()
 {
-	// Safety net:
-	if (staticReserved != nullptr)
-	{
-		ENG_LOG_ERROR("Static class already initialized");
-		return false;
-	}
+   // Safety net:
+   if (staticReserved != nullptr)
+   {
+      ENG_LOG_ERROR("Static class already initialized");
+      return false;
+   }
 
-	// Allocate and reset:
-	staticReserved = new Eng::Log::StaticReserved();
+   // Allocate and reset:
+   staticReserved = new Eng::Log::StaticReserved();
 
-	// Add shutdown hook:
-	atexit([]()
-	{
-		Eng::Log::free();
-	});
+   // Add shutdown hook:
+   atexit([]()
+      {         
+         if (Eng::Object::getNrOfObjects() != 0)
+            ENG_LOG_ERROR("Memory leak detected (parity check returned %d)", Eng::Object::getNrOfObjects());
+         Eng::Log::free();
+      });
 
-	staticReserved->outputFile.open(filename);
-	if (!staticReserved->outputFile.is_open())
-	{
-		std::cout << "[!] Unable to open output log file '" << filename << "'" << std::endl;
-		return false;
-	}
+   staticReserved->outputFile.open(filename);
+   if (!staticReserved->outputFile.is_open())
+   {
+      std::cout << "[!] Unable to open output log file '" << filename << "'" << std::endl;
+      return false;
+   }
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -99,19 +102,19 @@ bool ENG_API Eng::Log::init()
  */
 bool ENG_API Eng::Log::free()
 {
-	// Safety net:
-	if (staticReserved == nullptr)
-		return false;
+   // Safety net:
+   if (staticReserved == nullptr)
+      return false;
 
-	ENG_LOG_DEBUG("[-] Logging completed");
+   ENG_LOG_DEBUG("[-] Logging completed");
 
-	// Release resources:
-	staticReserved->outputFile.close();
-	delete staticReserved;
-	staticReserved = nullptr;
+   // Release resources:
+   staticReserved->outputFile.close();
+   delete staticReserved;
+   staticReserved = nullptr;
 
-	// Done:
-	return true;
+   // Done:
+   return true;
 }
 
 
@@ -124,79 +127,78 @@ bool ENG_API Eng::Log::free()
  * @param text message, with custom series of params
  * @warning race conditions when run concurrently
  */
-bool ENG_API Eng::Log::log(level lvl, const char* fileName, const char* functionName, int32_t codeLine,
-                           const char* text, ...)
+bool ENG_API Eng::Log::log(level lvl, const char *fileName, const char *functionName, int32_t codeLine, const char *text, ...)
 {
-	// Init at first usage:  
-	if (staticReserved == nullptr)
-		if (Log::init())
-			ENG_LOG_DEBUG("[+] Logging to file '%s' enabled", filename);
-		else
-			std::cout << "[!] No logging to file for this session" << std::endl;
+   // Init at first usage:  
+   if (staticReserved == nullptr)
+      if (Log::init())
+         ENG_LOG_DEBUG("[+] Logging to file '%s' enabled", filename);
+      else
+         std::cout << "[!] No logging to file for this session" << std::endl;
 
-	// Retrieve string:
-	char buffer[Log::maxLength];
-	va_list list;
+   // Retrieve string:
+   char buffer[Log::maxLength];
+   va_list list;
 
-	// Get params:
-	va_start(list, text);
-	vsprintf_s(buffer, text, list);
-	va_end(list);
+   // Get params:
+   va_start(list, text);
+   vsprintf_s(buffer, text, list);
+   va_end(list);
 
-	// Set values according to kind:
-	const uint32_t maxPrefixSize = Log::maxLength;
-	char prefix[maxPrefixSize];
-	bool returnMessage = true;
-	switch (lvl)
-	{
-	/////////////////////
-	case level::plain: //
-		sprintf_s(prefix, "%s", "");
-		returnMessage = true;
-		break;
+   // Set values according to kind:
+   const uint32_t maxPrefixSize = Log::maxLength;
+   char prefix[maxPrefixSize];
+   bool returnMessage = true;
+   switch (lvl)
+   {
+      /////////////////////
+      case level::plain: //
+         sprintf_s(prefix, "%s", "");
+         returnMessage = true;
+         break;
 
-	////////////////////
-	case level::info: //
-		sprintf_s(prefix, "%s ", "[*]");
-		returnMessage = true;
-		break;
+      ////////////////////
+      case level::info: //
+         sprintf_s(prefix, "%s ", "[*]");
+         returnMessage = true;
+         break;
 
-	///////////////////////
-	case level::warning: //
-		sprintf_s(prefix, "%s [%s] ", "[?]", functionName);
-		returnMessage = true;
-		break;
+      ///////////////////////
+      case level::warning: //
+         sprintf_s(prefix, "%s [%s] ", "[?]", functionName);
+         returnMessage = true;
+         break;
 
-	/////////////////////
-	case level::error: //
-		sprintf_s(prefix, "%s [%s, %s:%d] ", "[!]", fileName, functionName, codeLine);
-		returnMessage = false;
-		break;
+      /////////////////////
+      case level::error: //
+         sprintf_s(prefix, "%s [%s, %s:%d] ", "[!]", fileName, functionName, codeLine);
+         returnMessage = false;
+         break;
 
-	//////////////////////
-	case level::debug: //
-	case level::detail: //
-		sprintf_s(prefix, "%s [%s:%d] ", "[D]", functionName, codeLine);
-		returnMessage = true;
-		break;
-	}
+      //////////////////////
+      case level::debug:  //
+      case level::detail: //
+         sprintf_s(prefix, "%s [%s:%d] ", "[D]", functionName, codeLine);
+         returnMessage = true;
+         break;
+   }
 
-	// Unnecessary?
-	if (lvl > Eng::Log::debugLvl)
-		return returnMessage;
+   // Unnecessary?
+   if (lvl > Eng::Log::debugLvl)
+      return returnMessage;
 
-	// To file:
-	staticReserved->outputFile << prefix << buffer << std::endl;
+   // To file:
+   staticReserved->outputFile << prefix << buffer << std::endl;
 
-	// To console:
-	std::cout << prefix << buffer << std::endl;
+   // To console:
+   std::cout << prefix << buffer << std::endl;
 
-	// Custom callback?
-	if (staticReserved->customCallback)
-		staticReserved->customCallback(buffer, lvl, nullptr);
+   // Custom callback?
+   if (staticReserved->customCallback)
+      staticReserved->customCallback(buffer, lvl, nullptr);
 
-	// Done:
-	return returnMessage;
+   // Done:
+   return returnMessage;
 }
 
 
@@ -207,13 +209,14 @@ bool ENG_API Eng::Log::log(level lvl, const char* fileName, const char* function
  */
 void ENG_API Eng::Log::setCustomCallback(CustomCallbackProto cb)
 {
-	// Init at first usage:  
-	if (staticReserved == nullptr)
-		if (Log::init())
-			ENG_LOG_DEBUG("[+] Logging to file '%s' enabled", filename);
-		else
-			std::cout << "[!] No logging to file for this session" << std::endl;
+   // Init at first usage:  
+   if (staticReserved == nullptr)
+      if (Log::init())
+         ENG_LOG_DEBUG("[+] Logging to file '%s' enabled", filename);
+      else
+         std::cout << "[!] No logging to file for this session" << std::endl;
 
-	// Release resources:
-	staticReserved->customCallback = cb;
+   // Release resources:
+   staticReserved->customCallback = cb;
 }
+

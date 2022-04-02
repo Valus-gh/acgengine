@@ -4,6 +4,8 @@
 
 
 #define RYML_SINGLE_HDR_DEFINE_NOW
+#include "engine_config.h"
+
 #include "ryml_all.hpp"
 
 

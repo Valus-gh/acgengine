@@ -7,38 +7,40 @@
 #pragma once
 
 
-/**
- * @brief Timer class. This class is a singleton.
- */
+
+ /**
+  * @brief Timer class. This class is a singleton.
+  */
 class ENG_API Timer
 {
-	//////////
+//////////
 public: //
-	//////////
+//////////
 
-	// Const/dest:   
-	Timer(const Timer&) = delete;
-	~Timer();
+   // Const/dest:   
+   Timer(Timer const &) = delete;
+   ~Timer();
 
-	// Get/set:
-	uint64_t getCounter() const;
-	double getCounterDiff(uint64_t t1, uint64_t t2) const;
+   // Get/set:
+   uint64_t getCounter() const;
+   double getCounterDiff(uint64_t t1, uint64_t t2) const;
 
-	// Operators:
-	void operator=(const Timer&) = delete;
+   // Operators:
+   void operator=(Timer const &) = delete;
 
-	// Singleton:
-	static Timer& getInstance();
+   // Singleton:
+   static Timer &getInstance();
 
 
-	///////////
+///////////
 private: //
-	///////////
+///////////
 
-	// Reserved:
-	struct Reserved;
-	std::unique_ptr<Reserved> reserved;
+   // Reserved:
+   struct Reserved;
+   std::unique_ptr<Reserved> reserved;
 
-	// Const/dest:
-	Timer();
+   // Const/dest:
+   Timer();
 };
+

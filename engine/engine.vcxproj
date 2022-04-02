@@ -91,15 +91,53 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="engine.cpp" />
+    <ClCompile Include="engine_bitmap.cpp" />
     <ClCompile Include="engine_config.cpp" />
+    <ClCompile Include="engine_container.cpp" />
+    <ClCompile Include="engine_ebo.cpp" />
+    <ClCompile Include="engine_light.cpp" />
+    <ClCompile Include="engine_list.cpp" />
     <ClCompile Include="engine_log.cpp" />
+    <ClCompile Include="engine_managed.cpp" />
+    <ClCompile Include="engine_material.cpp" />
+    <ClCompile Include="engine_mesh.cpp" />
+    <ClCompile Include="engine_node.cpp" />
+    <ClCompile Include="engine_object.cpp" />
+    <ClCompile Include="engine_ovo.cpp" />
+    <ClCompile Include="engine_pipeline.cpp" />
+    <ClCompile Include="engine_pipeline_default.cpp" />
+    <ClCompile Include="engine_program.cpp" />
+    <ClCompile Include="engine_serializer.cpp" />
+    <ClCompile Include="engine_shader.cpp" />
+    <ClCompile Include="engine_texture.cpp" />
     <ClCompile Include="engine_timer.cpp" />
+    <ClCompile Include="engine_vao.cpp" />
+    <ClCompile Include="engine_vbo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine.h" />
+    <ClInclude Include="engine_bitmap.h" />
     <ClInclude Include="engine_config.h" />
+    <ClInclude Include="engine_container.h" />
+    <ClInclude Include="engine_ebo.h" />
+    <ClInclude Include="engine_light.h" />
+    <ClInclude Include="engine_list.h" />
     <ClInclude Include="engine_log.h" />
+    <ClInclude Include="engine_managed.h" />
+    <ClInclude Include="engine_material.h" />
+    <ClInclude Include="engine_mesh.h" />
+    <ClInclude Include="engine_node.h" />
+    <ClInclude Include="engine_object.h" />
+    <ClInclude Include="engine_ovo.h" />
+    <ClInclude Include="engine_pipeline.h" />
+    <ClInclude Include="engine_pipeline_default.h" />
+    <ClInclude Include="engine_program.h" />
+    <ClInclude Include="engine_serializer.h" />
+    <ClInclude Include="engine_shader.h" />
+    <ClInclude Include="engine_texture.h" />
     <ClInclude Include="engine_timer.h" />
+    <ClInclude Include="engine_vao.h" />
+    <ClInclude Include="engine_vbo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
