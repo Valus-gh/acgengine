@@ -366,5 +366,3 @@ FodyWeavers.xsd
 
 ## INCLUDE DEPENDENCIES
 !dependencies/**
-
-*.dds
