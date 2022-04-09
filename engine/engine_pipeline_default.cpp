@@ -40,25 +40,36 @@ uniform mat4 modelviewMat;
 uniform mat4 projectionMat;
 uniform mat3 normalMat;
 
+uniform vec3 lightPosition;
+
 // Varying:
 out vec4 fragPosition;
 out vec3 normal;
-out mat3 tbn;
 out vec2 uv;
+
+out vec3 V;
+out vec3 L;
 
 void main()
 {
    normal = normalMat * a_normal.xyz;
+
    vec3 tangent = normalMat * a_tangent.xyz;
    tangent = normalize(tangent - dot(tangent, normal) * normal);
+
    vec3 bitangent = normalize(cross(normal, tangent));
 
-   tbn = transpose(mat3(tangent, bitangent, normal));
+   mat3 tbn = transpose(mat3(tangent, bitangent, normal));
+   //tbn = mat3(tangent, bitangent, normal);
 
    uv = a_uv;
 
    fragPosition = modelviewMat * vec4(a_vertex, 1.0f);
    gl_Position = projectionMat * fragPosition;
+
+   V = tbn * normalize(-fragPosition.xyz);  
+   L = tbn * normalize(lightPosition - fragPosition.xyz);   
+
 })";
 
 
@@ -85,14 +96,14 @@ uniform float mtlMetalness;
 
 // Uniform (light):
 uniform vec3 lightColor;
-uniform vec3 lightPosition;
 
 // Varying:
 in vec4 fragPosition;
 in vec3 normal;
-in mat3 tbn;
 in vec2 uv;
- 
+in vec3 V;
+in vec3 L;
+
 // Output to the framebuffer:
 out vec4 outFragment;
 
@@ -110,16 +121,12 @@ void main()
    normal3d.z = sqrt(1.0 - pow(normal3d.x, 2.0) - pow(normal3d.y, 2.0));
    normal3d = normalize(normal3d * 2.0 - 1.0);
    
-   normal3d = tbn * normal3d;
-
    // Material props:
    justUseIt += mtlEmission.r + mtlAlbedo.r + mtlOpacity + mtlRoughness + mtlMetalness;
 
    vec3 fragColor = mtlEmission;   
    
    vec3 N = normalize(normal3d);   
-   vec3 V = normalize(-fragPosition.xyz);   
-   vec3 L = normalize(lightPosition - fragPosition.xyz);      
 
    // Light only front faces:
    if (dot(N, V) > 0.0f)
@@ -136,7 +143,6 @@ void main()
    
    outFragment = vec4(fragColor * albedo_texel.xyz, justUseIt);   
 })";
-
 
 /////////////////////////
 // RESERVED STRUCTURES //
