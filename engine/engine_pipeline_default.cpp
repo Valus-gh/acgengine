@@ -43,11 +43,18 @@ uniform mat3 normalMat;
 // Varying:
 out vec4 fragPosition;
 out vec3 normal;
+out mat3 tbn;
 out vec2 uv;
 
 void main()
 {
    normal = normalMat * a_normal.xyz;
+   vec3 tangent = normalMat * a_tangent.xyz;
+   tangent = normalize(tangent - dot(tangent, normal) * normal);
+   vec3 bitangent = normalize(cross(normal, tangent));
+
+   tbn = transpose(mat3(tangent, bitangent, normal));
+
    uv = a_uv;
 
    fragPosition = modelviewMat * vec4(a_vertex, 1.0f);
@@ -83,6 +90,7 @@ uniform vec3 lightPosition;
 // Varying:
 in vec4 fragPosition;
 in vec3 normal;
+in mat3 tbn;
 in vec2 uv;
  
 // Output to the framebuffer:
@@ -97,12 +105,19 @@ void main()
    vec4 metalness_texel = texture(texture3, uv);
    float justUseIt = albedo_texel.r + normal_texel.r + roughness_texel.r + metalness_texel.r;
 
+   // Calculate z parameter and normalize into [-1,1]
+   vec3 normal3d = normal_texel.xyz;
+   normal3d.z = sqrt(1.0 - pow(normal3d.x, 2.0) - pow(normal3d.y, 2.0));
+   normal3d = normalize(normal3d * 2.0 - 1.0);
+   
+   normal3d = tbn * normal3d;
+
    // Material props:
    justUseIt += mtlEmission.r + mtlAlbedo.r + mtlOpacity + mtlRoughness + mtlMetalness;
 
    vec3 fragColor = mtlEmission;   
    
-   vec3 N = normalize(normal);   
+   vec3 N = normalize(normal3d);   
    vec3 V = normalize(-fragPosition.xyz);   
    vec3 L = normalize(lightPosition - fragPosition.xyz);      
 
@@ -119,7 +134,7 @@ void main()
       fragColor += pow(nDotH, 70.0f) * lightColor;         
    }
    
-   outFragment = vec4(fragColor * albedo_texel.xyz, justUseIt);      
+   outFragment = vec4(fragColor * albedo_texel.xyz, justUseIt);   
 })";
 
 
