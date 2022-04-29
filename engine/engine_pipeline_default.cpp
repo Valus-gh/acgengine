@@ -40,15 +40,11 @@ uniform mat4 modelviewMat;
 uniform mat4 projectionMat;
 uniform mat3 normalMat;
 
-uniform vec3 lightPosition;
-
 // Varying:
 out vec4 fragPosition;
 out vec3 normal;
 out vec2 uv;
-
-out vec3 V;
-out vec3 L;
+out mat3 tbn;
 
 void main()
 {
@@ -59,16 +55,13 @@ void main()
 
    vec3 bitangent = normalize(cross(normal, tangent));
 
-   mat3 tbn = transpose(mat3(tangent, bitangent, normal));
+   tbn = transpose(mat3(tangent, bitangent, normal));
    //tbn = mat3(tangent, bitangent, normal);
 
    uv = a_uv;
 
    fragPosition = modelviewMat * vec4(a_vertex, 1.0f);
    gl_Position = projectionMat * fragPosition;
-
-   V = tbn * normalize(-fragPosition.xyz);  
-   L = tbn * normalize(lightPosition - fragPosition.xyz);   
 
 })";
 
@@ -80,6 +73,8 @@ void main()
 const std::string pipeline_fs = R"(
 #version 460 core
 #extension GL_ARB_bindless_texture : require
+
+const float PI = 3.14159265359;
 
 // Uniform (textures):
 layout (bindless_sampler) uniform sampler2D texture0; // Albedo
@@ -96,16 +91,88 @@ uniform float mtlMetalness;
 
 // Uniform (light):
 uniform vec3 lightColor;
+uniform vec3 lightPosition;
+uniform vec3 lightDirection;
 
 // Varying:
 in vec4 fragPosition;
 in vec3 normal;
 in vec2 uv;
-in vec3 V;
-in vec3 L;
+in mat3 tbn;
 
 // Output to the framebuffer:
 out vec4 outFragment;
+
+
+vec3 F0(vec3 dielectric, vec3 albedo, float metalness)
+{
+
+   return mix(dielectric, albedo, metalness);
+
+}
+
+float D_GGX(vec3 N, vec3 H, float alpha)
+{
+
+   float alpha_2 = alpha * alpha;
+
+   float cosNH   = max(0.0f, dot(N, H));
+   float cosNH_2 = cosNH * cosNH;
+
+   float num     = alpha_2;
+   float denom   = PI *  pow(cosNH_2 * (alpha_2 - 1.0f) + 1.0f, 2.0f);
+
+   return num / denom;
+
+}
+
+vec3 F_schlick(vec3 f0, vec3 H, vec3 V)
+{
+
+   float cosHV = max(0.0f, dot(H, V));
+
+   return f0 + (1.0f - f0) * pow(1.0 - cosHV, 5.0f); 
+
+}
+
+float G_beckmann(vec3 N, vec3 V, float alpha)
+{
+
+   float cosNV = max(0.0f, dot(N, V));
+   float k     = pow(alpha + 1.0f, 2.0f) / 8.0f;
+
+   float num   = cosNV;
+   float denom = cosNV * (1 - k) + k;
+
+   return num / denom;
+
+}
+
+vec3 lambert(vec3 albedo)
+{
+
+  return albedo / PI;
+
+}
+
+vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float alpha, float metal)
+{
+   // Fresnel base reflectivity at 0 deg incidence
+   vec3 fb = F0(vec3(0.04f), albedo, metal);
+
+   float D = D_GGX(N, H, alpha);
+   vec3  F = F_schlick(fb, H, V);
+   float G = G_beckmann(N, V, alpha);
+
+   float cosVN = max(0.0f, dot(V, N));
+   float cosLN = max(0.0f, dot(L, N));
+
+   vec3 num    = D * F * G;
+   float denom = 4 * cosVN * cosLN;
+
+   return num / denom;
+   
+}
 
 void main()
 {
@@ -114,34 +181,44 @@ void main()
    vec4 normal_texel = texture(texture1, uv);
    vec4 roughness_texel = texture(texture2, uv);
    vec4 metalness_texel = texture(texture3, uv);
-   float justUseIt = albedo_texel.r + normal_texel.r + roughness_texel.r + metalness_texel.r;
+   float justUseIt = albedo_texel.r + normal_texel.r + roughness_texel.r + metalness_texel.r + mtlAlbedo.x + mtlRoughness.x + mtlEmission.x + mtlMetalness.x + mtlOpacity.x;
 
    // Calculate z parameter and normalize into [-1,1]
    vec3 normal3d = normal_texel.xyz;
    normal3d.z = sqrt(1.0 - pow(normal3d.x, 2.0) - pow(normal3d.y, 2.0));
    normal3d = normalize(normal3d * 2.0 - 1.0);
    
-   // Material props:
-   justUseIt += mtlEmission.r + mtlAlbedo.r + mtlOpacity + mtlRoughness + mtlMetalness;
-
-   vec3 fragColor = mtlEmission;   
-   
    vec3 N = normalize(normal3d);   
+   vec3 V = tbn * normalize(-fragPosition.xyz);  
+   vec3 L = tbn * normalize(lightPosition - fragPosition.xyz);
 
-   // Light only front faces:
-   if (dot(N, V) > 0.0f)
-   {  
-      // Diffuse term:   
-      float nDotL = max(0.0f, dot(N, L));      
-      fragColor += nDotL * lightColor;
-      
-      // Specular term:     
-      vec3 H = normalize(L + V);                     
-      float nDotH = max(0.0f, dot(N, H));         
-      fragColor += pow(nDotH, 70.0f) * lightColor;         
-   }
+   // Half vector between view vector and light-fragment vector
+   vec3 H = normalize(V + L);
+
+// PBR //
+
+   // Lambert
+   vec3 fLB = lambert(albedo_texel.xyz);
+
+   // Cook-torrance
+   vec3 fCT = cook_torrance(N, L, V, H, albedo_texel.xyz, roughness_texel.r, metalness_texel.r);
+
+   // Reflection and Refraction Coefficients
+   vec3 fb = F0(vec3(0.04f), albedo_texel.xyz, metalness_texel.r);
+
+   vec3 ks = F_schlick(fb, H, V);
+   vec3 kd = (vec3(1.0f) - ks) * (1 - metalness_texel.r);
+
+   // Final result
+
+   float cosNLdir = max(0.0f, dot(N, lightDirection));
+
+   vec3 fr = kd * fLB + ks * fCT;
+
+// PBR //
    
-   outFragment = vec4(fragColor * albedo_texel.xyz, justUseIt);   
+   outFragment = vec4(fr * lightColor.xyz * cosNLdir, justUseIt);
+
 })";
 
 /////////////////////////
