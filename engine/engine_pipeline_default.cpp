@@ -39,11 +39,13 @@ layout(location = 3) in vec4 a_tangent;
 uniform mat4 modelviewMat;
 uniform mat4 projectionMat;
 uniform mat3 normalMat;
+uniform mat4 lightMatrix;
 
 uniform vec3 lightPosition;
 
 // Varying:
 out vec4 fragPosition;
+out vec4 fragPositionLightSpace;
 out vec3 normal;
 out vec2 uv;
 
@@ -65,6 +67,7 @@ void main()
    uv = a_uv;
 
    fragPosition = modelviewMat * vec4(a_vertex, 1.0f);
+   fragPositionLightSpace = lightMatrix * fragPosition;
    gl_Position = projectionMat * fragPosition;
 
    V = tbn * normalize(-fragPosition.xyz);  
@@ -86,6 +89,7 @@ layout (bindless_sampler) uniform sampler2D texture0; // Albedo
 layout (bindless_sampler) uniform sampler2D texture1; // Normal
 layout (bindless_sampler) uniform sampler2D texture2; // Roughness
 layout (bindless_sampler) uniform sampler2D texture3; // Metalness
+layout (bindless_sampler) uniform sampler2D texture4; // Shadow map
 
 // Uniform (material):
 uniform vec3 mtlEmission;
@@ -96,9 +100,12 @@ uniform float mtlMetalness;
 
 // Uniform (light):
 uniform vec3 lightColor;
+uniform vec3 lightAmbient;
+uniform vec3 lightPosition;
 
 // Varying:
 in vec4 fragPosition;
+in vec4 fragPositionLightSpace;
 in vec3 normal;
 in vec2 uv;
 in vec3 V;
@@ -107,6 +114,26 @@ in vec3 L;
 // Output to the framebuffer:
 out vec4 outFragment;
 
+/**
+ * Computes the amount of shadow for a given fragment.
+ * @param fragPosLightSpace frament coords in light space
+ * @return shadow intensity
+ */
+float shadowAmount(vec4 fragPosLightSpace)
+{
+   // From "clip" to "ndc" coords:
+   vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    
+   // Transform to the [0,1] range:
+   projCoords = projCoords * 0.5f + 0.5f;
+   
+   // Get closest depth in the shadow map:
+   float closestDepth = texture(texture4, projCoords.xy).r;    
+   
+   // Check whether current fragment is in shadow:
+   return projCoords.z > closestDepth  ? 1.0f : 0.0f;   
+} 
+
 void main()
 {
    // Texture lookup:
@@ -114,7 +141,8 @@ void main()
    vec4 normal_texel = texture(texture1, uv);
    vec4 roughness_texel = texture(texture2, uv);
    vec4 metalness_texel = texture(texture3, uv);
-   float justUseIt = albedo_texel.r + normal_texel.r + roughness_texel.r + metalness_texel.r;
+   float shadow_texel = texture(texture4, uv).r;
+   float justUseIt = albedo_texel.r + normal_texel.r + roughness_texel.r + metalness_texel.r + shadow_texel;
 
    // Calculate z parameter and normalize into [-1,1]
    vec3 normal3d = normal_texel.xyz;
@@ -124,13 +152,16 @@ void main()
    // Material props:
    justUseIt += mtlEmission.r + mtlAlbedo.r + mtlOpacity + mtlRoughness + mtlMetalness;
 
-   vec3 fragColor = mtlEmission;   
+   vec3 fragColor = mtlEmission + lightAmbient;   
    
    vec3 N = normalize(normal3d);   
 
    // Light only front faces:
    if (dot(N, V) > 0.0f)
-   {  
+   {
+
+      float shadow = 1.0f - shadowAmount(fragPositionLightSpace);
+
       // Diffuse term:   
       float nDotL = max(0.0f, dot(N, L));      
       fragColor += nDotL * lightColor;
@@ -292,7 +323,7 @@ void ENG_API Eng::PipelineDefault::setWireframe(bool flag)
  * @param list list of renderables
  * @return TF
  */
-bool ENG_API Eng::PipelineDefault::render(const glm::mat4& camera, const glm::mat4& proj, const Eng::List& list)
+bool ENG_API Eng::PipelineDefault::render(const Eng::Camera& camera, const Eng::List& list)
 {
 	// Safety net:
 	if (list == Eng::List::empty)

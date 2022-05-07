@@ -28,7 +28,7 @@ public: //
 
 	// Rendering methods:
 	//bool render(uint32_t value = 0, void *data = nullptr) const = delete;
-	bool render(const glm::mat4& camera, const glm::mat4& proj, const Eng::List& list);
+	bool render(const Eng::Camera& camera, const Eng::List& list);
 
 	// Managed:
 	bool init() override;

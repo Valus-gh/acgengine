@@ -451,6 +451,15 @@ uint64_t ENG_API Eng::Base::getFrameNr() const
 	return reserved->frameCounter;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current window size.
+ * @return current window size
+ */
+glm::ivec2 ENG_API Eng::Base::getWindowSize() const
+{
+	return glm::ivec2{reserved->properties->window_properties.size_x, reserved->properties->window_properties.size_y};
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**

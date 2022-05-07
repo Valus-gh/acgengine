@@ -67,16 +67,16 @@ namespace Eng
 #include "engine_config.h"
 #include "engine_timer.h"
 
-	// Architecture:
+// Architecture:
 #include "engine_object.h"
 #include "engine_managed.h"
 
-	// File formats:
+// File formats:
 #include "engine_serializer.h"
 #include "engine_bitmap.h"
 #include "engine_ovo.h"
 
-	// Objects:
+// Objects:
 #include "engine_vao.h"
 #include "engine_vbo.h"
 #include "engine_ebo.h"
@@ -84,18 +84,22 @@ namespace Eng
 #include "engine_program.h"
 #include "engine_texture.h"
 #include "engine_material.h"
+#include "engine_fbo.h"
 
-	// Scene-graph elems:
+// Scene-graph elems:
 #include "engine_node.h"
 #include "engine_mesh.h"
 #include "engine_light.h"
+#include "engine_camera.h"
 #include "engine_list.h"
 
-	// Storage:
+// Storage:
 #include "engine_container.h"
 
-	// Pipelines:
+// Pipelines:
 #include "engine_pipeline.h"
+#include "engine_pipeline_shadowmapping.h"
+#include "engine_pipeline_fullscreen2d.h"
 #include "engine_pipeline_default.h"
 
 
@@ -134,6 +138,7 @@ namespace Eng
 
 		// Get/set:
 		uint64_t getFrameNr() const;
+		glm::ivec2 getWindowSize() const;
 
 		// Management:
 		bool processEvents();

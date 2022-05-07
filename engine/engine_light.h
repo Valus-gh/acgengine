@@ -31,6 +31,10 @@ public: //
 	// Get/set:
 	void setColor(const glm::vec3& color);
 	const glm::vec3& getColor() const;
+	void setAmbient(const glm::vec3& ambient);
+	const glm::vec3& getAmbient() const;
+	void setProjMatrix(const glm::mat4& projMatrix);
+	const glm::mat4& getProjMatrix() const;
 
 	// Rendering methods:   
 	bool render(uint32_t value = 0, void* data = nullptr) const;

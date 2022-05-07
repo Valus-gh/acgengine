@@ -55,6 +55,9 @@ public: //
 		r8g8_compressed,
 		r8_compressed,
 
+		// Depth maps:
+		depth,
+
 		// Terminator:
 		last
 	};
@@ -81,6 +84,7 @@ public: //
 
 	// Bitmap:
 	bool load(const Eng::Bitmap& bitmap);
+	bool create(uint32_t sizeX, uint32_t sizeY, Format format);
 
 	// Rendering methods:
 	bool render(uint32_t value = 0, void* data = nullptr) const;

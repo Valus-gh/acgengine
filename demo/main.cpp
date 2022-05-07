@@ -173,7 +173,8 @@ int main(int argc, char *argv[])
 
    // Rendering elements:
    Eng::List list;
-   glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 1.0f, 1000.0f);      
+   Eng::Camera camera;
+   camera.setProjMatrix(glm::perspective(glm::radians(45.0f), eng.getWindowSize().x / (float)eng.getWindowSize().y, 1.0f, 1000.0f));
 
    /////////////
    // Main loop:
@@ -190,7 +191,8 @@ int main(int argc, char *argv[])
       
       // Main rendering:
       eng.clear();      
-         dfltPipe.render(camera, proj, list);
+		dfltPipe.render(camera, list);
+
       eng.swap();    
 
       displayFPS();
