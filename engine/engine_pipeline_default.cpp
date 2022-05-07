@@ -135,14 +135,14 @@ vec3 F_schlick(vec3 f0, vec3 H, vec3 V)
 
 }
 
-float G_beckmann(vec3 N, vec3 V, float alpha)
+float G_schlickGGX(vec3 N, vec3 V, float alpha)
 {
 
    float cosNV = max(0.0f, dot(N, V));
    float k     = pow(alpha + 1.0f, 2.0f) / 8.0f;
 
    float num   = cosNV;
-   float denom = cosNV * (1 - k) + k;
+   float denom = cosNV * (1.0f - k) + k;
 
    return num / denom;
 
@@ -162,7 +162,7 @@ vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float alpha, flo
 
    float D = D_GGX(N, H, alpha);
    vec3  F = F_schlick(fb, H, V);
-   float G = G_beckmann(N, V, alpha);
+   float G = G_schlickGGX(N, V, alpha);
 
    float cosVN = max(0.0f, dot(V, N));
    float cosLN = max(0.0f, dot(L, N));
@@ -192,7 +192,7 @@ void main()
    vec3 V = tbn * normalize(-fragPosition.xyz);  
    vec3 L = tbn * normalize(lightPosition - fragPosition.xyz);
 
-   // Half vector between view vector and light-fragment vector
+   // Half vector between view vector and light vector
    vec3 H = normalize(V + L);
 
 // PBR //
@@ -216,9 +216,11 @@ void main()
    vec3 fr = kd * fLB + ks * fCT;
 
 // PBR //
-   
-   outFragment = vec4(fr * lightColor.xyz * cosNLdir, justUseIt);
 
+   if(lightDirection != vec3(0.0f))
+      outFragment = vec4(fr * lightColor.xyz * cosNLdir, justUseIt);
+   else
+      outFragment = vec4(fr * lightColor.xyz, justUseIt);
 })";
 
 /////////////////////////
