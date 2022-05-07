@@ -6,11 +6,12 @@
  */
 
 
-//////////////
-// #INCLUDE //
-//////////////
 
-// Main include:
+ //////////////
+ // #INCLUDE //
+ //////////////
+
+    // Main include:
 #include "engine.h"
 
 // OGL:      
@@ -21,15 +22,17 @@
 #include <unordered_map>
 
 
+
 ////////////
 // STATIC //
 ////////////
 
-// Special values:
+   // Special values:
 Eng::Program Eng::Program::empty("[empty]");
 
 // Cache:
 std::reference_wrapper<Eng::Program> Eng::Program::cache = Eng::Program::empty;
+
 
 
 /////////////////////////
@@ -41,17 +44,19 @@ std::reference_wrapper<Eng::Program> Eng::Program::cache = Eng::Program::empty;
  */
 struct Eng::Program::Reserved
 {
-	Type type; ///< Program type   
-	std::vector<std::reference_wrapper<Eng::Shader>> shader; ///< Shaders used by the program
-	GLuint oglId; ///< OpenGL program ID   
-	std::unordered_map<std::string, GLint> location; ///< Lookup table for uniform locations
+    Type type;                                                  ///< Program type   
+    std::vector<std::reference_wrapper<Eng::Shader>> shader;    ///< Shaders used by the program
+    GLuint oglId;                                               ///< OpenGL program ID   
+    std::unordered_map<std::string, GLint> location;            ///< Lookup table for uniform locations
 
 
-	/**
-	 * Constructor.
-	 */
-	Reserved() : type{Eng::Program::Type::none}, oglId{0} {}
+    /**
+     * Constructor.
+     */
+    Reserved() : type{ Eng::Program::Type::none }, oglId{ 0 }
+    {}
 };
+
 
 
 ///////////////////////////
@@ -64,7 +69,7 @@ struct Eng::Program::Reserved
  */
 ENG_API Eng::Program::Program() : reserved(std::make_unique<Eng::Program::Reserved>())
 {
-	ENG_LOG_DEBUG("[+]");
+    ENG_LOG_DEBUG("[+]");
 }
 
 
@@ -73,10 +78,9 @@ ENG_API Eng::Program::Program() : reserved(std::make_unique<Eng::Program::Reserv
  * Constructor with name.
  * @param name node name
  */
-ENG_API Eng::Program::Program(const std::string& name) : Eng::Object(name),
-                                                         reserved(std::make_unique<Eng::Program::Reserved>())
+ENG_API Eng::Program::Program(const std::string& name) : Eng::Object(name), reserved(std::make_unique<Eng::Program::Reserved>())
 {
-	ENG_LOG_DEBUG("[+]");
+    ENG_LOG_DEBUG("[+]");
 }
 
 
@@ -86,7 +90,7 @@ ENG_API Eng::Program::Program(const std::string& name) : Eng::Object(name),
  */
 ENG_API Eng::Program::Program(Program&& other) : Eng::Object(std::move(other)), reserved(std::move(other.reserved))
 {
-	ENG_LOG_DEBUG("[M]");
+    ENG_LOG_DEBUG("[M]");
 }
 
 
@@ -96,59 +100,59 @@ ENG_API Eng::Program::Program(Program&& other) : Eng::Object(std::move(other)), 
  */
 ENG_API Eng::Program::~Program()
 {
-	ENG_LOG_DEBUG("[-]");
+    ENG_LOG_DEBUG("[-]");
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
- * Create an OpenGL program. 
+ * Create an OpenGL program.
  * @return TF
  */
 bool ENG_API Eng::Program::init()
 {
-	if (this->Eng::Managed::init() == false)
-		return false;
+    if (this->Eng::Managed::init() == false)
+        return false;
 
-	// Free program if stored:
-	if (reserved->oglId)
-	{
-		glDeleteProgram(reserved->oglId);
-		reserved->oglId = 0;
-	}
+    // Free program if stored:
+    if (reserved->oglId)
+    {
+        glDeleteProgram(reserved->oglId);
+        reserved->oglId = 0;
+    }
 
-	// Create program:
-	reserved->oglId = glCreateProgram();
-	if (reserved->oglId == 0)
-	{
-		ENG_LOG_ERROR("Unable to create program");
-		return false;
-	}
+    // Create program:
+    reserved->oglId = glCreateProgram();
+    if (reserved->oglId == 0)
+    {
+        ENG_LOG_ERROR("Unable to create program");
+        return false;
+    }
 
-	// Done:      
-	return true;
+    // Done:      
+    return true;
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
- * Destroy an OpenGL instance. 
+ * Destroy an OpenGL instance.
  * @return TF
  */
 bool ENG_API Eng::Program::free()
 {
-	if (this->Eng::Managed::free() == false)
-		return false;
+    if (this->Eng::Managed::free() == false)
+        return false;
 
-	// Free shader if stored:
-	if (reserved->oglId)
-	{
-		glDeleteProgram(reserved->oglId);
-		reserved->oglId = 0;
-	}
+    // Free shader if stored:
+    if (reserved->oglId)
+    {
+        glDeleteProgram(reserved->oglId);
+        reserved->oglId = 0;
+    }
 
-	// Done:      
-	return true;
+    // Done:      
+    return true;
 }
 
 
@@ -159,7 +163,7 @@ bool ENG_API Eng::Program::free()
  */
 const Eng::Program::Type ENG_API Eng::Program::getType() const
 {
-	return reserved->type;
+    return reserved->type;
 }
 
 
@@ -170,7 +174,7 @@ const Eng::Program::Type ENG_API Eng::Program::getType() const
  */
 const uint32_t ENG_API Eng::Program::getNrOfShaders() const
 {
-	return static_cast<uint32_t>(reserved->shader.size());
+    return static_cast<uint32_t>(reserved->shader.size());
 }
 
 
@@ -182,13 +186,13 @@ const uint32_t ENG_API Eng::Program::getNrOfShaders() const
  */
 const Eng::Shader ENG_API& Eng::Program::getShader(uint32_t id) const
 {
-	// Safety net:
-	if (id >= reserved->shader.size())
-	{
-		ENG_LOG_ERROR("Invalid params");
-		return Eng::Shader::empty;
-	}
-	return reserved->shader[id];
+    // Safety net:
+    if (id >= reserved->shader.size())
+    {
+        ENG_LOG_ERROR("Invalid params");
+        return Eng::Shader::empty;
+    }
+    return reserved->shader[id];
 }
 
 
@@ -199,7 +203,7 @@ const Eng::Shader ENG_API& Eng::Program::getShader(uint32_t id) const
  */
 Eng::Program ENG_API& Eng::Program::getCached()
 {
-	return cache;
+    return cache;
 }
 
 
@@ -211,78 +215,78 @@ Eng::Program ENG_API& Eng::Program::getCached()
  */
 bool ENG_API Eng::Program::build(std::initializer_list<std::reference_wrapper<Eng::Shader>> args)
 {
-	reserved->shader.clear();
-	for (auto& arg : args)
-	{
-		if (arg.get() == Eng::Shader::empty)
-		{
-			ENG_LOG_ERROR("Invalid params (empty shader)");
-			return false;
-		}
-		/*if (std::find(reserved->shader.begin(), reserved->shader.end(), arg.get()) != reserved->shader.end())
-		{
-		   OV_LOG_ERROR("Invalid params (same shader passed twice)");
-		   return false;
-		}*/
-		reserved->shader.push_back(arg);
-	}
+    reserved->shader.clear();
+    for (auto& arg : args)
+    {
+        if (arg.get() == Eng::Shader::empty)
+        {
+            ENG_LOG_ERROR("Invalid params (empty shader)");
+            return false;
+        }
+        /*if (std::find(reserved->shader.begin(), reserved->shader.end(), arg.get()) != reserved->shader.end())
+        {
+           OV_LOG_ERROR("Invalid params (same shader passed twice)");
+           return false;
+        }*/
+        reserved->shader.push_back(arg);
+    }
 
-	// Validate possible configurations:
-	if (this->getNrOfShaders() >= 3)
-	{
-		ENG_LOG_ERROR("Invalid/unsupported shader sequence");
-		return false;
-	}
+    // Validate possible configurations:
+    if (this->getNrOfShaders() >= 3)
+    {
+        ENG_LOG_ERROR("Invalid/unsupported shader sequence");
+        return false;
+    }
 
-	// Init program:
-	this->init();
+    // Init program:
+    this->init();
 
-	// Link shaders:
-	for (uint32_t c = 0; c < this->getNrOfShaders(); c++)
-	{
-		const Eng::Shader& s = dynamic_cast<const Eng::Shader&>(this->getShader(c));
-		glAttachShader(reserved->oglId, s.getOglHandle());
-	}
-	glLinkProgram(reserved->oglId);
+    // Link shaders:
+    for (uint32_t c = 0; c < this->getNrOfShaders(); c++)
+    {
+        const Eng::Shader& s = dynamic_cast<const Eng::Shader&>(this->getShader(c));
+        glAttachShader(reserved->oglId, s.getOglHandle());
+    }
+    glLinkProgram(reserved->oglId);
 
-	// Check:
-	GLint success;
-	glGetProgramiv(reserved->oglId, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		ENG_LOG_ERROR("Program link status error, message:");
-		char buffer[Eng::Log::maxLength - 1];
-		int32_t length;
-		glGetProgramInfoLog(reserved->oglId, Eng::Log::maxLength - 1, &length, buffer);
-		if (length > 0)
-		{
-			ENG_LOG_ERROR("%s", buffer);
-		}
-		else
-		{
-			ENG_LOG_ERROR("[no message]");
-		}
-		return false;
-	}
+    // Check:
+    GLint success;
+    glGetProgramiv(reserved->oglId, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        ENG_LOG_ERROR("Program link status error, message:");
+        char buffer[Eng::Log::maxLength - 1];
+        int32_t length;
+        glGetProgramInfoLog(reserved->oglId, Eng::Log::maxLength - 1, &length, buffer);
+        if (length > 0)
+        {
+            ENG_LOG_ERROR("%s", buffer);
+        }
+        else
+        {
+            ENG_LOG_ERROR("[no message]");
+        }
+        return false;
+    }
 
-	// Validate:
-	glValidateProgram(reserved->oglId);
-	glGetProgramiv(reserved->oglId, GL_VALIDATE_STATUS, &success);
-	if (success == GL_FALSE)
-	{
-		ENG_LOG_ERROR("Unable to validate program");
-		char buffer[Eng::Log::maxLength - 1];
-		int32_t length;
-		glGetProgramInfoLog(reserved->oglId, Eng::Log::maxLength - 1, &length, buffer);
-		if (length > 0)
-		{
-			ENG_LOG_ERROR("Program validation error: %s", buffer);
-		}
-		return false;
-	}
+    // Validate:
+    glValidateProgram(reserved->oglId);
+    glGetProgramiv(reserved->oglId, GL_VALIDATE_STATUS, &success);
+    if (success == GL_FALSE)
+    {
+        ENG_LOG_ERROR("Unable to validate program");
+        char buffer[Eng::Log::maxLength - 1];
+        int32_t length;
+        glGetProgramInfoLog(reserved->oglId, Eng::Log::maxLength - 1, &length, buffer);
+        if (length > 0)
+        {
+            ENG_LOG_ERROR("Program validation error: %s", buffer);
+        }
+        return false;
+    }
 
-	// Done:
-	return true;
+    // Done:
+    return true;
 }
 
 
@@ -292,8 +296,8 @@ bool ENG_API Eng::Program::build(std::initializer_list<std::reference_wrapper<En
  */
 void ENG_API Eng::Program::reset()
 {
-	Eng::Program::cache = Eng::Program::empty;
-	glUseProgram(0);
+    Eng::Program::cache = Eng::Program::empty;
+    glUseProgram(0);
 }
 
 
@@ -305,31 +309,31 @@ void ENG_API Eng::Program::reset()
  */
 int32_t ENG_API Eng::Program::getParamLocation(const std::string& name)
 {
-	// Safety net:
-	if (name.empty())
-	{
-		ENG_LOG_ERROR("Invalid params");
-		return -1;
-	}
+    // Safety net:
+    if (name.empty())
+    {
+        ENG_LOG_ERROR("Invalid params");
+        return -1;
+    }
 
-	this->render();
+    this->render();
 
-	// Use or add?
-	auto location = reserved->location.find(name);
-	if (location == reserved->location.end())
-	{
-		GLint position = glGetUniformLocation(reserved->oglId, name.c_str());
-		if (position == -1)
-		{
-			ENG_LOG_ERROR("Variable '%s' not found", name.c_str());
-			return false;
-		}
-		reserved->location.insert(std::make_pair(name, position));
-		location = reserved->location.find(name);
-	}
+    // Use or add?
+    auto location = reserved->location.find(name);
+    if (location == reserved->location.end())
+    {
+        GLint position = glGetUniformLocation(reserved->oglId, name.c_str());
+        if (position == -1)
+        {
+            ENG_LOG_WARN("Variable '%s' not found", name.c_str());
+            // return false;
+        }
+        reserved->location.insert(std::make_pair(name, position));
+        location = reserved->location.find(name);
+    }
 
-	// Done:      
-	return location->second;
+    // Done:      
+    return location->second;
 }
 
 
@@ -342,12 +346,12 @@ int32_t ENG_API Eng::Program::getParamLocation(const std::string& name)
  */
 bool ENG_API Eng::Program::setFloat(const std::string& name, float value)
 {
-	GLint location = getParamLocation(name);
-	if (location == -1)
-		return false;
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
 
-	glUniform1f(location, value);
-	return true;
+    glUniform1f(location, value);
+    return true;
 }
 
 
@@ -360,13 +364,13 @@ bool ENG_API Eng::Program::setFloat(const std::string& name, float value)
  */
 bool ENG_API Eng::Program::setInt(const std::string& name, int32_t value)
 {
-	GLint location = getParamLocation(name);
-	if (location == -1)
-		return false;
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
 
-	// Done:
-	glUniform1i(location, value);
-	return true;
+    // Done:
+    glUniform1i(location, value);
+    return true;
 }
 
 
@@ -379,13 +383,13 @@ bool ENG_API Eng::Program::setInt(const std::string& name, int32_t value)
  */
 bool ENG_API Eng::Program::setUInt(const std::string& name, uint32_t value)
 {
-	GLint location = getParamLocation(name);
-	if (location == -1)
-		return false;
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
 
-	// Done:
-	glUniform1ui(location, value);
-	return true;
+    // Done:
+    glUniform1ui(location, value);
+    return true;
 }
 
 
@@ -398,13 +402,13 @@ bool ENG_API Eng::Program::setUInt(const std::string& name, uint32_t value)
  */
 bool ENG_API Eng::Program::setUInt64(const std::string& name, uint64_t value)
 {
-	GLint location = getParamLocation(name);
-	if (location == -1)
-		return false;
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
 
-	// Done:
-	glUniformHandleui64ARB(location, value);
-	return true;
+    // Done:
+    glUniformHandleui64ARB(location, value);
+    return true;
 }
 
 
@@ -417,13 +421,13 @@ bool ENG_API Eng::Program::setUInt64(const std::string& name, uint64_t value)
  */
 bool ENG_API Eng::Program::setVec3(const std::string& name, const glm::vec3& value)
 {
-	GLint location = getParamLocation(name);
-	if (location == -1)
-		return false;
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
 
-	// Done:
-	glUniform3fv(location, 1, glm::value_ptr(value));
-	return true;
+    // Done:
+    glUniform3fv(location, 1, glm::value_ptr(value));
+    return true;
 }
 
 
@@ -436,13 +440,13 @@ bool ENG_API Eng::Program::setVec3(const std::string& name, const glm::vec3& val
  */
 bool ENG_API Eng::Program::setVec4(const std::string& name, const glm::vec4& value)
 {
-	GLint location = getParamLocation(name);
-	if (location == -1)
-		return false;
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
 
-	// Done:
-	glUniform4fv(location, 1, glm::value_ptr(value));
-	return true;
+    // Done:
+    glUniform4fv(location, 1, glm::value_ptr(value));
+    return true;
 }
 
 
@@ -455,13 +459,13 @@ bool ENG_API Eng::Program::setVec4(const std::string& name, const glm::vec4& val
  */
 bool ENG_API Eng::Program::setMat3(const std::string& name, const glm::mat3& value)
 {
-	GLint location = getParamLocation(name);
-	if (location == -1)
-		return false;
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
 
-	// Done:
-	glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
-	return true;
+    // Done:
+    glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    return true;
 }
 
 
@@ -474,13 +478,13 @@ bool ENG_API Eng::Program::setMat3(const std::string& name, const glm::mat3& val
  */
 bool ENG_API Eng::Program::setMat4(const std::string& name, const glm::mat4& value)
 {
-	GLint location = getParamLocation(name);
-	if (location == -1)
-		return false;
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
 
-	// Done:
-	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-	return true;
+    // Done:
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    return true;
 }
 
 
@@ -493,15 +497,15 @@ bool ENG_API Eng::Program::setMat4(const std::string& name, const glm::mat4& val
  */
 bool ENG_API Eng::Program::render(uint32_t value, void* data) const
 {
-	// Render only if necessary:   
-	if (Eng::Program::cache.get() != *this)
-	{
-		glUseProgram(reserved->oglId);
-		Eng::Program::cache = const_cast<Eng::Program&>(*this);
-	}
+    // Render only if necessary:   
+    if (Eng::Program::cache.get() != *this)
+    {
+        glUseProgram(reserved->oglId);
+        Eng::Program::cache = const_cast<Eng::Program&>(*this);
+    }
 
-	// Done:
-	return true;
+    // Done:
+    return true;
 }
 
 
@@ -515,14 +519,14 @@ bool ENG_API Eng::Program::render(uint32_t value, void* data) const
  */
 bool ENG_API Eng::Program::compute(uint32_t sizeX, uint32_t sizeY, uint32_t sizeZ) const
 {
-	// TODO: check a compute shader is really attached
+    // TODO: check a compute shader is really attached
 
-	// Run kernel:
-	render();
-	glDispatchCompute(sizeX, sizeY, sizeZ);
+    // Run kernel:
+    render();
+    glDispatchCompute(sizeX, sizeY, sizeZ);
 
-	// Done:
-	return true;
+    // Done:
+    return true;
 }
 
 
@@ -533,9 +537,9 @@ bool ENG_API Eng::Program::compute(uint32_t sizeX, uint32_t sizeY, uint32_t size
  */
 bool ENG_API Eng::Program::wait() const
 {
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-	glFinish();
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glFinish();
 
-	// Done:
-	return true;
+    // Done:
+    return true;
 }

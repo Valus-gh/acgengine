@@ -18,7 +18,7 @@ public: //
 //////////
 
    // Special values:
-   constexpr static uint32_t depthTextureSize = 512;     ///< Size of the depth map
+   constexpr static uint32_t depthTextureSize = 1024;     ///< Size of the depth map
 
    
    // Const/dest:

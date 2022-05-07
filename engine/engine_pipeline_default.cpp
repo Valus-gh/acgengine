@@ -164,12 +164,12 @@ void main()
 
       // Diffuse term:   
       float nDotL = max(0.0f, dot(N, L));      
-      fragColor += nDotL * lightColor;
+      fragColor += nDotL * lightColor * shadow;
       
       // Specular term:     
       vec3 H = normalize(L + V);                     
       float nDotH = max(0.0f, dot(N, H));         
-      fragColor += pow(nDotH, 70.0f) * lightColor;         
+      fragColor += pow(nDotH, 70.0f) * lightColor * shadow;         
    }
    
    outFragment = vec4(fragColor * albedo_texel.xyz, justUseIt);   
@@ -189,6 +189,8 @@ struct Eng::PipelineDefault::Reserved
 	Eng::Program program;
 
 	bool wireframe;
+
+	PipelineShadowMapping shadowMapping;
 
 
 	/**
@@ -294,6 +296,16 @@ bool ENG_API Eng::PipelineDefault::free()
 	return true;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Gets a reference to the shadow mapping pipeline.
+ * @return shadow mapping pipeline reference
+ */
+const Eng::PipelineShadowMapping ENG_API& Eng::PipelineDefault::getShadowMappingPipeline() const
+{
+	return reserved->shadowMapping;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -326,11 +338,14 @@ void ENG_API Eng::PipelineDefault::setWireframe(bool flag)
 bool ENG_API Eng::PipelineDefault::render(const Eng::Camera& camera, const Eng::List& list)
 {
 	// Safety net:
-	if (list == Eng::List::empty)
+	if (camera == Eng::Camera::empty || list == Eng::List::empty)
 	{
 		ENG_LOG_ERROR("Invalid params");
 		return false;
 	}
+
+	// Just to update the cache:
+	this->Eng::Pipeline::render(list);
 
 	// Lazy-loading:
 	if (this->isDirty())
@@ -348,7 +363,10 @@ bool ENG_API Eng::PipelineDefault::render(const Eng::Camera& camera, const Eng::
 		return false;
 	}
 	program.render();
-	program.setMat4("projectionMat", proj);
+
+	// Apply camera:   
+	camera.render();
+	glm::mat4 viewMatrix = glm::inverse(camera.getWorldMatrix());
 
 	// Wireframe is on?
 	if (isWireframe())
@@ -366,11 +384,23 @@ bool ENG_API Eng::PipelineDefault::render(const Eng::Camera& camera, const Eng::
 
 		// Render one light at time:
 		const Eng::List::RenderableElem& lightRe = list.getRenderableElem(l);
-		glm::mat4 lightFinalMatrix = camera * lightRe.matrix;
-		lightRe.reference.get().render(0, &lightFinalMatrix);
+		const Eng::Light& light = dynamic_cast<const Eng::Light&>(lightRe.reference.get());
+
+		// Render shadow map:
+		reserved->shadowMapping.render(lightRe, list);
+
+		// Re-enable this pipeline's program:
+		program.render();
+		glm::mat4 lightFinalMatrix = viewMatrix * lightRe.matrix; // Light position in eye coords
+		light.render(0, &lightFinalMatrix);
+
+		lightFinalMatrix = light.getProjMatrix() * glm::inverse(lightRe.matrix) * glm::inverse(viewMatrix); // To convert from eye coords into light space    
+		program.setMat4("lightMatrix", lightFinalMatrix);
+		reserved->shadowMapping.getShadowMap().render(4);
 
 		// Render meshes:
-		list.render(camera, Eng::List::Pass::meshes);
+		list.render(viewMatrix, Eng::List::Pass::meshes);
+
 	}
 
 	// Disable blending, in case we used it:

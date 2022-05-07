@@ -1,7 +1,7 @@
 window:
   start-size:
-    x: 1000
-    y: 1000
+    x: 1024
+    y: 768
   fullscreen: false
 
 engine:

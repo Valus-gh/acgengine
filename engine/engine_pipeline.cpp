@@ -18,9 +18,11 @@
 // STATIC //
 ////////////
 
-// Special values:
+   // Special values:
 Eng::Pipeline Eng::Pipeline::empty("[empty]");
 
+// Cache:
+std::reference_wrapper<Eng::Pipeline> Eng::Pipeline::cache = Eng::Pipeline::empty;
 
 /////////////////////////
 // RESERVED STRUCTURES //
@@ -117,12 +119,23 @@ Eng::Program ENG_API& Eng::Pipeline::getProgram() const
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
+ * Get the last rendered pipeline.
+ * @return last rendered pipeline
+ */
+Eng::Pipeline ENG_API& Eng::Pipeline::getCached()
+{
+	return cache;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
  * Main rendering method for the pipeline.  
  * @param list list of renderables
  * @return TF
  */
 bool ENG_API Eng::Pipeline::render(const Eng::List& list)
 {
-	ENG_LOG_ERROR("Emtpy rendering method called");
-	return false;
+	// Just update cache:
+	Eng::Pipeline::cache = const_cast<Eng::Pipeline&>(*this);
+	return true;
 }

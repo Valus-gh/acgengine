@@ -32,10 +32,15 @@ public: //
 	// Rendering methods:
 	virtual bool render(const Eng::List& list);
 
+	// Cache:
+	static Pipeline& getCached();
 
 	/////////////
 protected: //
 	/////////////
+
+    // Cache:
+	static std::reference_wrapper<Eng::Pipeline> cache;
 
 	// Reserved:
 	struct Reserved;

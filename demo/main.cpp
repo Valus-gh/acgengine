@@ -15,6 +15,7 @@
    #include "engine.h"
 
    // C/C++:
+#include <chrono>
    #include <iostream>
 
 
@@ -27,11 +28,11 @@
    double oldMouseX, oldMouseY;
    float rotX, rotY;
    bool mouseBR, mouseBL;
-   float transZ = -50.0f;
+   float transZ = 50.0f;
 
    // Main rendering pipeline:
    Eng::PipelineDefault dfltPipe;
-
+   Eng::PipelineFullscreen2D full2dPipe;
 
 
 ///////////////
@@ -86,7 +87,7 @@ void mouseButtonCallback(int button, int action, int mods)
 void mouseScrollCallback(double scrollX, double scrollY)
 {
    // ENG_LOG_DEBUG("x: %.1f, y: %.1f", scrollX, scrollY);
-   transZ += (float) scrollY;
+   transZ -= (float) scrollY;
 }
 
 
@@ -151,52 +152,52 @@ int main(int argc, char *argv[])
    eng.setMouseScrollCallback(mouseScrollCallback);
    eng.setKeyboardCallback(keyboardCallback);
 
+
    /////////////////
-   // Loading model:   
-   Eng::Ovo ovo; 
+   // Loading scene:   
+   Eng::Ovo ovo;
    std::reference_wrapper<Eng::Node> root = ovo.load("simple3dScene.ovo");
    std::cout << "Scene graph:\n" << root.get().getTreeAsString() << std::endl;
-   
+
    // Get light ref:
-   std::reference_wrapper<Eng::Light> light1 = dynamic_cast<Eng::Light &>(Eng::Container::getInstance().find("Omni001"));   
-   // light1.get().setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)));
+   std::reference_wrapper<Eng::Light> light = dynamic_cast<Eng::Light&>(Eng::Container::getInstance().find("Omni001"));
+   // light.get().setProjMatrix(glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f)); // Orthographic projection
+   light.get().setProjMatrix(glm::perspective(glm::radians(75.0f), 1.0f, 1.0f, 1000.0f)); // Perspective projection         
 
-   std::reference_wrapper<Eng::Light> light2 = dynamic_cast<Eng::Light &>(Eng::Container::getInstance().find("Omni002"));
-   light2.get().setColor({ 1.0f, 0.0f, 0.0f });   
-
-   std::reference_wrapper<Eng::Light> light3 = dynamic_cast<Eng::Light &>(Eng::Container::getInstance().find("Omni003"));
-   light3.get().setColor({ 0.0f, 0.0f, 1.0f });   
-
-   // Get a material and set its emission:
-   std::reference_wrapper<Eng::Material> mtl = dynamic_cast<Eng::Material &>(Eng::Container::getInstance().find("01 - Default"));
-   mtl.get().setEmission({ 0.0f, 0.0f, 0.0f });
+   // Get torus knot ref:
+   std::reference_wrapper<Eng::Mesh> tknot = dynamic_cast<Eng::Mesh&>(Eng::Container::getInstance().find("Torus Knot001"));
 
    // Rendering elements:
    Eng::List list;
    Eng::Camera camera;
    camera.setProjMatrix(glm::perspective(glm::radians(45.0f), eng.getWindowSize().x / (float)eng.getWindowSize().y, 1.0f, 1000.0f));
 
+
    /////////////
    // Main loop:
-   std::cout << "Entering main loop..." << std::endl;   
+   std::cout << "Entering main loop..." << std::endl;
+
    while (eng.processEvents())
-   {      
-      // Update viewpoint:
-      glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, transZ));
-      root.get().setMatrix(glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotX), { 1.0f, 0.0f, 0.0f }), glm::radians(rotY), { 0.0f, 1.0f, 0.0f }));
-      
-      // Update list:
-      list.reset();
-      list.process(root);
-      
-      // Main rendering:
-      eng.clear();      
-		dfltPipe.render(camera, list);
+   {
 
-      eng.swap();    
+       // Update viewpoint:
+       camera.setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, transZ)));
+       root.get().setMatrix(glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotX), { 1.0f, 0.0f, 0.0f }), glm::radians(rotY), { 0.0f, 1.0f, 0.0f }));
 
-      displayFPS();
+       // Update list:
+       list.reset();
+       list.process(root);
 
+       // Main rendering:
+       eng.clear();
+       dfltPipe.render(camera, list);
+       // // Uncomment the following two lines for displaying the shadow map:
+       // eng.clear();
+       // full2dPipe.render(dfltPipe.getShadowMappingPipeline().getShadowMap(), list);
+       eng.swap();
+
+       displayFPS();
+       
    }
    std::cout << "Leaving main loop..." << std::endl;
 
