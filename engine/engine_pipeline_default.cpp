@@ -55,8 +55,8 @@ void main()
 
    vec3 bitangent = normalize(cross(normal, tangent));
 
-   tbn = transpose(mat3(tangent, bitangent, normal));
-   //tbn = mat3(tangent, bitangent, normal);
+   //tbn = transpose(mat3(tangent, bitangent, normal));
+   tbn = mat3(tangent, bitangent, normal);
 
    uv = a_uv;
 
@@ -92,7 +92,6 @@ uniform float mtlMetalness;
 // Uniform (light):
 uniform vec3 lightColor;
 uniform vec3 lightPosition;
-uniform vec3 lightDirection;
 
 // Varying:
 in vec4 fragPosition;
@@ -102,7 +101,6 @@ in mat3 tbn;
 
 // Output to the framebuffer:
 out vec4 outFragment;
-
 
 vec3 F0(vec3 dielectric, vec3 albedo, float metalness)
 {
@@ -117,6 +115,8 @@ float D_GGX(vec3 N, vec3 H, float alpha)
    float alpha_2 = alpha * alpha;
 
    float cosNH   = max(0.0f, dot(N, H));
+   //float cosNH   = dot(N, H);
+
    float cosNH_2 = cosNH * cosNH;
 
    float num     = alpha_2;
@@ -130,6 +130,7 @@ vec3 F_schlick(vec3 f0, vec3 H, vec3 V)
 {
 
    float cosHV = max(0.0f, dot(H, V));
+   //float cosHV = dot(H, V);
 
    return f0 + (1.0f - f0) * pow(1.0 - cosHV, 5.0f); 
 
@@ -138,7 +139,8 @@ vec3 F_schlick(vec3 f0, vec3 H, vec3 V)
 float G_schlickGGX(vec3 N, vec3 V, float alpha)
 {
 
-   float cosNV = max(0.0f, dot(N, V));
+   //float cosNV = max(0.0f, dot(N, V));
+   float cosNV = dot(N, V);
    float k     = pow(alpha + 1.0f, 2.0f) / 8.0f;
 
    float num   = cosNV;
@@ -164,8 +166,8 @@ vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float alpha, flo
    vec3  F = F_schlick(fb, H, V);
    float G = G_schlickGGX(N, V, alpha);
 
-   float cosVN = max(0.0f, dot(V, N));
-   float cosLN = max(0.0f, dot(L, N));
+   float cosVN = dot(V, N);
+   float cosLN = dot(L, N);
 
    vec3 num    = D * F * G;
    float denom = 4 * cosVN * cosLN;
@@ -188,9 +190,9 @@ void main()
    normal3d.z = sqrt(1.0 - pow(normal3d.x, 2.0) - pow(normal3d.y, 2.0));
    normal3d = normalize(normal3d * 2.0 - 1.0);
    
-   vec3 N = normalize(normal3d);   
-   vec3 V = tbn * normalize(-fragPosition.xyz);  
-   vec3 L = tbn * normalize(lightPosition - fragPosition.xyz);
+   vec3 N = tbn * normalize(normal3d);   
+   vec3 V = normalize(-fragPosition.xyz);  
+   vec3 L = normalize(lightPosition - fragPosition.xyz);
 
    // Half vector between view vector and light vector
    vec3 H = normalize(V + L);
@@ -211,16 +213,14 @@ void main()
 
    // Final result
 
-   float cosNLdir = max(0.0f, dot(N, lightDirection));
+   //float cosNLdir = max(0.0f, dot(N, lightDirection));
 
    vec3 fr = kd * fLB + ks * fCT;
 
 // PBR //
 
-   if(lightDirection != vec3(0.0f))
-      outFragment = vec4(fr * lightColor.xyz * cosNLdir, justUseIt);
-   else
-      outFragment = vec4(fr * lightColor.xyz, justUseIt);
+   outFragment = vec4(fr * lightColor.xyz, justUseIt);
+
 })";
 
 /////////////////////////
@@ -419,6 +419,9 @@ bool ENG_API Eng::PipelineDefault::render(const glm::mat4& camera, const glm::ma
 
 		// Render meshes:
 		list.render(camera, Eng::List::Pass::meshes);
+
+		//break;
+
 	}
 
 	// Disable blending, in case we used it:

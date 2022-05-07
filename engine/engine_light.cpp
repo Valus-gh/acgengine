@@ -32,7 +32,6 @@ Eng::Light Eng::Light::empty("[empty]");
 struct Eng::Light::Reserved
 {
 	glm::vec3 color; ///< Light color
-	glm::vec3 direction;
 
 	/**
 	 * Constructor. 
@@ -150,8 +149,8 @@ uint32_t ENG_API Eng::Light::loadChunk(Eng::Serializer& serial, void* data)
 	serial.deserialize(reserved->color);
 	float radius;
 	serial.deserialize(radius);
-
-	serial.deserialize(reserved->direction);
+	glm::vec3 direction;
+	serial.deserialize(direction);
 	float cutoff;
 	serial.deserialize(cutoff);
 	float spotExponent;
@@ -178,7 +177,6 @@ bool ENG_API Eng::Light::render(uint32_t value, void* data) const
 	Eng::Program& program = dynamic_cast<Eng::Program&>(Eng::Program::getCached());
 	program.setVec3("lightColor", reserved->color);
 	program.setVec3("lightPosition", glm::vec3((*((glm::mat4*)data))[3]));
-	program.setVec3("lightDirection", reserved->direction);
 
 	// Done:
 	return true;

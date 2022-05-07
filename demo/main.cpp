@@ -161,12 +161,6 @@ int main(int argc, char *argv[])
    std::reference_wrapper<Eng::Light> light1 = dynamic_cast<Eng::Light &>(Eng::Container::getInstance().find("Omni001"));   
    // light1.get().setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)));
 
-   std::reference_wrapper<Eng::Light> light2 = dynamic_cast<Eng::Light &>(Eng::Container::getInstance().find("Omni002"));
-   light2.get().setColor({ 1.0f, 0.0f, 0.0f });   
-
-   std::reference_wrapper<Eng::Light> light3 = dynamic_cast<Eng::Light &>(Eng::Container::getInstance().find("Omni003"));
-   light3.get().setColor({ 0.0f, 0.0f, 1.0f });   
-
    // Get a material and set its emission:
    std::reference_wrapper<Eng::Material> mtl = dynamic_cast<Eng::Material &>(Eng::Container::getInstance().find("01 - Default"));
    mtl.get().setEmission({ 0.0f, 0.0f, 0.0f });
