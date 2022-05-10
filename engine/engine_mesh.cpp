@@ -42,7 +42,7 @@ struct Eng::Mesh::Reserved
 	Eng::Vao vao;
 	Eng::Vbo vbo;
 	Eng::Ebo ebo;
-
+	
 	// Material:
 	std::reference_wrapper<const Eng::Material> material;
 

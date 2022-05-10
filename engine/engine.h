@@ -85,6 +85,7 @@ namespace Eng
 #include "engine_texture.h"
 #include "engine_material.h"
 #include "engine_fbo.h"
+#include "engine_ssbo.h"
 
 // Scene-graph elems:
 #include "engine_node.h"
@@ -101,6 +102,7 @@ namespace Eng
 #include "engine_pipeline_shadowmapping.h"
 #include "engine_pipeline_fullscreen2d.h"
 #include "engine_pipeline_default.h"
+#include "engine_pipeline_raytracing.h"
 
 
 	///////////////////////
