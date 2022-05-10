@@ -5,6 +5,8 @@
  * @author	Achille Peternier (achille.peternier@supsi.ch), (C) SUPSI
  */
 
+// 1 check normalization
+// normal i in wrong direction
 
 //////////////
 // #INCLUDE //
@@ -109,16 +111,12 @@ vec3 F0(vec3 dielectric, vec3 albedo, float metalness)
 
 }
 
-float D_GGX(vec3 N, vec3 H, float alpha)
+float D_GGX(vec3 N, vec3 H, float roughness)
 {
-
+   float alpha = roughness * roughness;
    float alpha_2 = alpha * alpha;
-
    float cosNH   = max(0.0f, dot(N, H));
-   //float cosNH   = dot(N, H);
-
    float cosNH_2 = cosNH * cosNH;
-
    float num     = alpha_2;
    float denom   = PI *  pow(cosNH_2 * (alpha_2 - 1.0f) + 1.0f, 2.0f);
 
@@ -126,21 +124,19 @@ float D_GGX(vec3 N, vec3 H, float alpha)
 
 }
 
-vec3 F_schlick(vec3 f0, vec3 H, vec3 V)
+vec3 F_schlick(vec3 f0, vec3 N, vec3 V)
 {
 
-   float cosHV = max(0.0f, dot(H, V));
-   //float cosHV = dot(H, V);
+   float cosNV = max(0.0f, dot(N, V));
 
-   return f0 + (1.0f - f0) * pow(1.0 - cosHV, 5.0f); 
+   return f0 + (1.0f - f0) * pow(clamp(1.0f - cosNV, 0.0f, 1.0f), 5.0f); 
 
 }
 
 float G_schlickGGX(vec3 N, vec3 V, float alpha)
 {
-
-   //float cosNV = max(0.0f, dot(N, V));
-   float cosNV = dot(N, V);
+   float cosNV = max(0.0f, dot(N, V));
+   //float cosNV = dot(N, V);
    float k     = pow(alpha + 1.0f, 2.0f) / 8.0f;
 
    float num   = cosNV;
@@ -163,14 +159,14 @@ vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float alpha, flo
    vec3 fb = F0(vec3(0.04f), albedo, metal);
 
    float D = D_GGX(N, H, alpha);
-   vec3  F = F_schlick(fb, H, V);
-   float G = G_schlickGGX(N, V, alpha);
+   vec3  F = F_schlick(fb, N, V);
+   float G = G_schlickGGX(N, H, alpha);
 
-   float cosVN = dot(V, N);
-   float cosLN = dot(L, N);
+   float cosVN = max(dot(V, N), 0.00f);
+   float cosLN = max(dot(L, N), 0.00f);
 
    vec3 num    = D * F * G;
-   float denom = 4 * cosVN * cosLN;
+   float denom = 0.01f + 4 * cosVN * cosLN;
 
    return num / denom;
    
@@ -187,9 +183,10 @@ void main()
 
    // Calculate z parameter and normalize into [-1,1]
    vec3 normal3d = normal_texel.xyz;
+   normal3d = normal3d * 2.0 - 1.0;
    normal3d.z = sqrt(1.0 - pow(normal3d.x, 2.0) - pow(normal3d.y, 2.0));
-   normal3d = normalize(normal3d * 2.0 - 1.0);
-   
+   normal3d = normalize(normal3d);
+
    vec3 N = tbn * normalize(normal3d);   
    vec3 V = normalize(-fragPosition.xyz);  
    vec3 L = normalize(lightPosition - fragPosition.xyz);
