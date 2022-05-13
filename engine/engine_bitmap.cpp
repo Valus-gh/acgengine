@@ -421,47 +421,51 @@ bool ENG_API Eng::Bitmap::load(const std::string& filename)
 	ENG_LOG_DEBUG("File fourCC: '%s'", fourCC);
 	if (strcmp(fourCC, "DXT1") == 0)
 		reserved->format = Eng::Bitmap::Format::r8g8b8_compressed;
-	else if (strcmp(fourCC, "DXT5") == 0)
-		reserved->format = Eng::Bitmap::Format::r8g8b8a8_compressed;
-	else if (strcmp(fourCC, "ATI1") == 0)
-		reserved->format = Eng::Bitmap::Format::r8_compressed;
-	else if (strcmp(fourCC, "ATI2") == 0)
-		reserved->format = Eng::Bitmap::Format::r8g8_compressed;
-	else if (strcmp(fourCC, "DX10") == 0)
-	{
-		// Get header10:
-		DDS_HEADER10* header10 = reinterpret_cast<DDS_HEADER10*>(position);
-		position += sizeof(DDS_HEADER10);
-
-		// Cube map (new format)?
-		ENG_LOG_DEBUG("Array: %u", header10->arraySize);
-		if (header10->arraySize == 6)
-		{
-			ENG_LOG_DEBUG("Image is a cubemap");
-			reserved->nrOfSides = header10->arraySize;
-		}
-
-		// Check format:
-		switch (header10->dxgiFormat)
-		{
-		case DXGI_FORMAT_BC1_UNORM:
-			reserved->format = Eng::Bitmap::Format::r8g8b8_compressed;
-			break;
-
-		case DXGI_FORMAT_BC3_UNORM:
-			reserved->format = Eng::Bitmap::Format::r8g8b8a8_compressed;
-			break;
-
-		default:
-			ENG_LOG_ERROR("File '%s' uses an unsupported DX10 compression format", filename.c_str());
-			return false;
-		}
-	}
 	else
-	{
-		ENG_LOG_ERROR("File '%s' uses an unsupported compression format", filename.c_str());
-		return false;
-	}
+		if (strcmp(fourCC, "DXT5") == 0)
+			reserved->format = Eng::Bitmap::Format::r8g8b8a8_compressed;
+		else
+			if (strcmp(fourCC, "ATI1") == 0)
+				reserved->format = Eng::Bitmap::Format::r8_compressed;
+			else
+				if (strcmp(fourCC, "ATI2") == 0)
+					reserved->format = Eng::Bitmap::Format::r8g8_compressed;
+				else
+					if (strcmp(fourCC, "DX10") == 0)
+					{
+						// Get header10:
+						DDS_HEADER10* header10 = reinterpret_cast<DDS_HEADER10*> (position); position += sizeof(DDS_HEADER10);
+
+						// Cube map (new format)?
+						ENG_LOG_DEBUG("Array: %u", header10->arraySize);
+						if (header10->arraySize == 6)
+						{
+							ENG_LOG_DEBUG("Image is a cubemap");
+							reserved->nrOfSides = header10->arraySize;
+						}
+
+						// Check format:
+						switch (header10->dxgiFormat)
+						{
+						case DXGI_FORMAT_BC1_UNORM:
+							reserved->format = Eng::Bitmap::Format::r8g8b8_compressed;
+							break;
+
+						case DXGI_FORMAT_BC3_UNORM:
+							reserved->format = Eng::Bitmap::Format::r8g8b8a8_compressed;
+							break;
+
+						default:
+							ENG_LOG_ERROR("File '%s' uses an unsupported DX10 compression format", filename.c_str());
+							return false;
+						}
+					}
+					else
+					{
+						ENG_LOG_ERROR("File '%s' uses an unsupported compression format", filename.c_str());
+						return false;
+
+					}
 
 	switch (reserved->format)
 	{

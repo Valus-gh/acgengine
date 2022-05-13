@@ -533,6 +533,23 @@ bool ENG_API Eng::Texture::create(uint32_t sizeX, uint32_t sizeY, Format format)
         nrOfComponents = 1;
         break;
 
+
+        /////////////////////////
+    case Format::rgb_float: //    
+        intFormat = GL_RGB16F;
+        extFormat = GL_RGB;
+        extType = GL_FLOAT;
+        nrOfComponents = 3;
+        break;
+
+        /////////////////////////
+    case Format::rgba_float: //
+        intFormat = GL_RGBA16F;
+        extFormat = GL_RGBA;
+        extType = GL_FLOAT;
+        nrOfComponents = 4;
+        break;
+
         ///////////
     default: //
         ENG_LOG_ERROR("Unexpected format type");
@@ -559,6 +576,8 @@ bool ENG_API Eng::Texture::create(uint32_t sizeX, uint32_t sizeY, Format format)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
         float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
     }
 
     // Resident:

@@ -48,6 +48,8 @@ public: //
 		// Uncompressed formats:
 		r8g8b8a8,
 		r8g8b8,
+		rgb_float,
+		rgba_float,
 
 		// Compressed formats:
 		r8g8b8_compressed,

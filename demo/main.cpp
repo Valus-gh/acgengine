@@ -33,7 +33,7 @@
    // Main rendering pipeline:
    Eng::PipelineDefault dfltPipe;
    Eng::PipelineFullscreen2D full2dPipe;
-
+   Eng::PipelineDeferred deferredPipe;
 
 ///////////////
 // CALLBACKS //
@@ -195,11 +195,16 @@ int main(int argc, char *argv[])
 
        // Main rendering:
        eng.clear();
-       dfltPipe.render(camera, list);
+       //dfltPipe.render(camera, list);
        // // Uncomment the following two lines for displaying the shadow map:
        // eng.clear();
        // full2dPipe.render(dfltPipe.getShadowMappingPipeline().getShadowMap(), list);
-       eng.swap();
+
+
+       deferredPipe.render(camera, list);
+
+
+   	   eng.swap();
 
        displayFPS();
        

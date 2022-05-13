@@ -253,6 +253,15 @@ bool ENG_API Eng::Fbo::attachTexture(const Eng::Texture &texture, uint32_t level
          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attId, GL_TEXTURE_2D, texture.getOglHandle(), 0);								
          break;
 
+
+         /////////////////////////////////////
+      case Eng::Texture::Format::rgb_float: //
+      case Eng::Texture::Format::rgba_float:
+          att.type = Eng::Fbo::Attachment::Type::color_texture;
+          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attId, GL_TEXTURE_2D, texture.getOglHandle(), 0);
+          break;
+
+
       ////////////////////////////////////
       case Eng::Texture::Format::depth: //
          att.type = Eng::Fbo::Attachment::Type::depth_texture;
