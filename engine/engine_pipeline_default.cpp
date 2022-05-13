@@ -41,16 +41,12 @@ uniform mat4 projectionMat;
 uniform mat3 normalMat;
 uniform mat4 lightMatrix;
 
-uniform vec3 lightPosition;
-
 // Varying:
 out vec4 fragPosition;
 out vec4 fragPositionLightSpace;
 out vec3 normal;
 out vec2 uv;
-
-out vec3 V;
-out vec3 L;
+out mat3 tbn;
 
 void main()
 {
@@ -61,17 +57,14 @@ void main()
 
    vec3 bitangent = normalize(cross(normal, tangent));
 
-   mat3 tbn = transpose(mat3(tangent, bitangent, normal));
-   //tbn = mat3(tangent, bitangent, normal);
+   //tbn = transpose(mat3(tangent, bitangent, normal));
+   tbn = mat3(tangent, bitangent, normal);
 
    uv = a_uv;
 
    fragPosition = modelviewMat * vec4(a_vertex, 1.0f);
    fragPositionLightSpace = lightMatrix * fragPosition;
    gl_Position = projectionMat * fragPosition;
-
-   V = tbn * normalize(-fragPosition.xyz);  
-   L = tbn * normalize(lightPosition - fragPosition.xyz);   
 
 })";
 
@@ -83,6 +76,8 @@ void main()
 const std::string pipeline_fs = R"(
 #version 460 core
 #extension GL_ARB_bindless_texture : require
+
+const float PI = 3.14159265359;
 
 // Uniform (textures):
 layout (bindless_sampler) uniform sampler2D texture0; // Albedo
@@ -100,7 +95,6 @@ uniform float mtlMetalness;
 
 // Uniform (light):
 uniform vec3 lightColor;
-uniform vec3 lightAmbient;
 uniform vec3 lightPosition;
 
 // Varying:
@@ -108,11 +102,11 @@ in vec4 fragPosition;
 in vec4 fragPositionLightSpace;
 in vec3 normal;
 in vec2 uv;
-in vec3 V;
-in vec3 L;
+in mat3 tbn;
 
 // Output to the framebuffer:
 out vec4 outFragment;
+
 
 /**
  * Computes the amount of shadow for a given fragment.
@@ -134,6 +128,81 @@ float shadowAmount(vec4 fragPosLightSpace)
    return projCoords.z > closestDepth  ? 1.0f : 0.0f;   
 } 
 
+vec3 F0(vec3 dielectric, vec3 albedo, float metalness)
+{
+
+   return mix(dielectric, albedo, metalness);
+
+}
+
+float D_GGX(vec3 N, vec3 H, float roughness)
+{
+
+   float alpha = roughness * roughness;
+   float alpha_2 = alpha * alpha;
+
+   float cosNH   = max(0.0f, dot(N, H));
+   //float cosNH   = dot(N, H);
+
+   float cosNH_2 = cosNH * cosNH;
+
+   float num     = alpha_2;
+   float denom   = PI *  pow(cosNH_2 * (alpha_2 - 1.0f) + 1.0f, 2.0f);
+
+   return num / denom;
+
+}
+
+vec3 F_schlick(vec3 f0, vec3 H, vec3 V)
+{
+
+   float cosHV = max(0.0f, dot(H, V));
+
+   return f0 + (1.0f - f0) * pow(clamp(1.0 - cosHV, 0.0f, 1.0f), 5.0f); 
+
+}
+
+float G_schlickGGX(vec3 N, vec3 V, float alpha)
+{
+
+   float cosNV = max(0.0f, dot(N, V));
+
+   float k     = pow(alpha + 1.0f, 2.0f) / 8.0f;
+
+   float num   = cosNV;
+   float denom = cosNV * (1.0f - k) + k;
+
+   return num / denom;
+
+}
+
+vec3 lambert(vec3 albedo)
+{
+
+  return albedo / PI;
+
+}
+
+vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float alpha, float metal)
+{
+   // Fresnel base reflectivity at 0 deg incidence
+   vec3 fb = F0(vec3(0.04f), albedo, metal);
+
+   float D = D_GGX(N, H, alpha);
+   vec3  F = F_schlick(fb, N, V);
+   float G = G_schlickGGX(N, H, alpha);
+
+   float cosVN = max(0.0f, dot(V, N));
+   float cosLN = max(0.0f, dot(L, N));
+
+   vec3 num    = D * F * G;
+   float denom = 0.01f + 4 * cosVN * cosLN;
+
+   return num / denom;
+   
+}
+
+
 void main()
 {
    // Texture lookup:
@@ -142,37 +211,50 @@ void main()
    vec4 roughness_texel = texture(texture2, uv);
    vec4 metalness_texel = texture(texture3, uv);
    float shadow_texel = texture(texture4, uv).r;
-   float justUseIt = albedo_texel.r + normal_texel.r + roughness_texel.r + metalness_texel.r + shadow_texel;
+
+   float justUseIt = albedo_texel.r + normal_texel.r + roughness_texel.r + metalness_texel.r + mtlAlbedo.x + mtlRoughness.x + mtlEmission.x + mtlMetalness.x + mtlOpacity.x + shadow_texel;
 
    // Calculate z parameter and normalize into [-1,1]
    vec3 normal3d = normal_texel.xyz;
+   normal3d = normal3d * 2.0 - 1.0;
    normal3d.z = sqrt(1.0 - pow(normal3d.x, 2.0) - pow(normal3d.y, 2.0));
-   normal3d = normalize(normal3d * 2.0 - 1.0);
-   
-   // Material props:
-   justUseIt += mtlEmission.r + mtlAlbedo.r + mtlOpacity + mtlRoughness + mtlMetalness;
+   normal3d = normalize(normal3d);
 
-   vec3 fragColor = mtlEmission + lightAmbient;   
-   
-   vec3 N = normalize(normal3d);   
+   vec3 N = tbn * normalize(normal3d);   
+   vec3 V = normalize(-fragPosition.xyz);  
+   vec3 L = normalize(lightPosition - fragPosition.xyz);
 
-   // Light only front faces:
-   if (dot(N, V) > 0.0f)
-   {
+   // Half vector between view vector and light vector
+   vec3 H = normalize(V + L);
 
-      float shadow = 1.0f - shadowAmount(fragPositionLightSpace);
+// PBR //
 
-      // Diffuse term:   
-      float nDotL = max(0.0f, dot(N, L));      
-      fragColor += nDotL * lightColor * shadow;
-      
-      // Specular term:     
-      vec3 H = normalize(L + V);                     
-      float nDotH = max(0.0f, dot(N, H));         
-      fragColor += pow(nDotH, 70.0f) * lightColor * shadow;         
-   }
-   
-   outFragment = vec4(fragColor * albedo_texel.xyz, justUseIt);   
+   // Lambert
+   vec3 fLB = lambert(albedo_texel.xyz);
+
+   // Cook-torrance
+   vec3 fCT = cook_torrance(N, L, V, H, albedo_texel.xyz, roughness_texel.r, metalness_texel.r);
+
+   // Reflection and Refraction Coefficients
+   vec3 fb = F0(vec3(0.04f), albedo_texel.xyz, metalness_texel.r);
+
+   vec3 ks = F_schlick(fb, N, V);
+   vec3 kd = (vec3(1.0f) - ks) * (1 - metalness_texel.r);
+
+   // Final result
+
+   //float cosNLdir = max(0.0f, dot(N, lightDirection));
+
+   vec3 fr = kd * fLB + ks * fCT;
+
+  // float shadow = 1.0f - shadowAmount(fragPositionLightSpace);
+
+  // fr = fr * shadow;
+
+// PBR //
+
+   outFragment = vec4(fr * lightColor.xyz, justUseIt);
+
 })";
 
 /////////////////////////
@@ -399,6 +481,7 @@ bool ENG_API Eng::PipelineDefault::render(const Eng::Camera& camera, const Eng::
 		reserved->shadowMapping.getShadowMap().render(4);
 
 		// Render meshes:
+
 		list.render(viewMatrix, Eng::List::Pass::meshes);
 
 	}

@@ -38,13 +38,13 @@ struct Eng::Light::Reserved
     glm::vec3 ambient;            ///< Ambient color
     glm::mat4 projMatrix;         ///< Projection matrix used for shadow mapping
 
-
     /**
      * Constructor.
      */
     Reserved() : color{ 1.0f }, ambient{ 0.25f },
         projMatrix{ 1.0f }
     {}
+
 };
 
 
@@ -229,7 +229,6 @@ bool ENG_API Eng::Light::render(uint32_t value, void* data) const
 {
     Eng::Program& program = dynamic_cast<Eng::Program&>(Eng::Program::getCached());
     program.setVec3("lightColor", reserved->color);
-    program.setVec3("lightAmbient", reserved->ambient);
     program.setVec3("lightPosition", glm::vec3((*((glm::mat4*)data))[3]));
 
     // Done:
