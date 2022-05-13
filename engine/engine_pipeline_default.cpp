@@ -189,7 +189,7 @@ vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float alpha, flo
    vec3 fb = F0(vec3(0.04f), albedo, metal);
 
    float D = D_GGX(N, H, alpha);
-   vec3  F = F_schlick(fb, N, V);
+   vec3  F = F_schlick(fb, H, V);
    float G = G_schlickGGX(N, H, alpha);
 
    float cosVN = max(0.0f, dot(V, N));
@@ -238,7 +238,7 @@ void main()
    // Reflection and Refraction Coefficients
    vec3 fb = F0(vec3(0.04f), albedo_texel.xyz, metalness_texel.r);
 
-   vec3 ks = F_schlick(fb, N, V);
+   vec3 ks = F_schlick(fb, H, V);
    vec3 kd = (vec3(1.0f) - ks) * (1 - metalness_texel.r);
 
    // Final result
@@ -247,9 +247,9 @@ void main()
 
    vec3 fr = kd * fLB + ks * fCT;
 
-  // float shadow = 1.0f - shadowAmount(fragPositionLightSpace);
+    float shadow = 1.0f - shadowAmount(fragPositionLightSpace);
 
-  // fr = fr * shadow;
+   fr = fr * shadow;
 
 // PBR //
 
