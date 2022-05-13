@@ -42,15 +42,20 @@ struct Eng::Mesh::Reserved
 	Eng::Vao vao;
 	Eng::Vbo vbo;
 	Eng::Ebo ebo;
-	
+
 	// Material:
 	std::reference_wrapper<const Eng::Material> material;
+
+	// Bounding volumes:
+	float radius;
 
 
 	/**
 	 * Constructor
 	 */
-	Reserved() : material{Eng::Material::empty} {}
+	Reserved() : material{Eng::Material::empty}, radius{1.0f}
+	{
+	}
 };
 
 
@@ -127,6 +132,39 @@ const Eng::Material ENG_API& Eng::Mesh::getMaterial() const
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
+ * Gets a reference to the used VBO.  
+ * @return reference to used VBO
+ */
+const Eng::Vbo ENG_API& Eng::Mesh::getVbo() const
+{
+	return reserved->vbo;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Gets a reference to the used EBO.  
+ * @return reference to used EBO
+ */
+const Eng::Ebo ENG_API& Eng::Mesh::getEbo() const
+{
+	return reserved->ebo;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Gets the bounding sphere radius for this mesh.
+ * @return bounding sphere radius
+ */
+const float ENG_API Eng::Mesh::getRadius() const
+{
+	return reserved->radius;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
  * Loads the specific information of a given object. In its base class, this function loads the file version chunk.
  * @param serializer serial data
  * @param data optional pointer
@@ -170,8 +208,7 @@ uint32_t ENG_API Eng::Mesh::loadChunk(Eng::Serializer& serial, void* data)
 	mat = dynamic_cast<Eng::Material&>(Eng::Container::getInstance().find(materialName));
 	this->setMaterial(mat);
 
-	float radius;
-	serial.deserialize(radius);
+	serial.deserialize(reserved->radius);
 
 	glm::vec3 bboxMin;
 	serial.deserialize(bboxMin);

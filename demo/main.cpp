@@ -15,7 +15,6 @@
    #include "engine.h"
 
    // C/C++:
-#include <chrono>
    #include <iostream>
 
 
@@ -33,6 +32,7 @@
    // Main rendering pipeline:
    Eng::PipelineDefault dfltPipe;
    Eng::PipelineFullscreen2D full2dPipe;
+   Eng::PipelineRayTracing rtPipe;
 
 
 ///////////////
@@ -177,6 +177,9 @@ int main(int argc, char *argv[])
    // Main loop:
    std::cout << "Entering main loop..." << std::endl;
 
+
+
+   bool rt = true;
    while (eng.processEvents())
    {
 
@@ -188,16 +191,22 @@ int main(int argc, char *argv[])
        list.reset();
        list.process(root);
 
-       // Main rendering:
        eng.clear();
-       dfltPipe.render(camera, list);
-       // // Uncomment the following two lines for displaying the shadow map:
-       // eng.clear();
-       // full2dPipe.render(dfltPipe.getShadowMappingPipeline().getShadowMap(), list);
-       eng.swap();
 
+       if (rt) {
+           // Rt rendering:
+           rtPipe.migrate(list);
+           rtPipe.render(camera, list);
+           full2dPipe.render(rtPipe.getColorBuffer(), list);
+       }
+       else {
+           // Normal rendering
+           dfltPipe.render(camera, list);
+       }
+
+       eng.swap();
        displayFPS();
-       
+       //rt = !rt;
    }
    std::cout << "Leaving main loop..." << std::endl;
 

@@ -32,6 +32,9 @@ public: //
 	// Get/set:
 	bool setMaterial(const Eng::Material& mat);
 	const Eng::Material& getMaterial() const;
+	const Eng::Vbo& getVbo() const;
+	const Eng::Ebo& getEbo() const;
+	const float getRadius() const;
 
 	// Rendering methods:   
 	bool render(uint32_t value = 0, void* data = nullptr) const;

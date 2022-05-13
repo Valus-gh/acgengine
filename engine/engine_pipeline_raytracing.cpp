@@ -100,6 +100,13 @@ layout(std430, binding=2) buffer BSphereData
    BSphereStruct bsphere[];     
 };   
 
+/////////////////////////
+// MATERIAL PROPERTIES //
+/////////////////////////
+struct MaterialProps {
+	TODO
+}
+
 
 
 ///////////////////
@@ -271,7 +278,8 @@ bool intersect(const Ray ray, out HitInfo info)
                   info.triangle = i;   
                   info.t = t;
                   info.u = u;
-                  info.v = v;                                                                                                      
+                  info.v = v;
+                  info.color = vec3(1.0f,0.2f,0.2f);
                }
       }
 
