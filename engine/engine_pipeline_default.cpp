@@ -247,7 +247,7 @@ void main()
 
    vec3 fr = kd * fLB + ks * fCT;
 
-    float shadow = 1.0f - shadowAmount(fragPositionLightSpace);
+   float shadow = 1.0f - shadowAmount(fragPositionLightSpace);
 
    fr = fr * shadow;
 
