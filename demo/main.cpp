@@ -30,8 +30,11 @@
    bool mouseBR, mouseBL;
    float transZ = 50.0f;
 
+   bool renderFullScreen = false;
+
    // Main rendering pipeline:
    Eng::PipelineDefault dfltPipe;
+   Eng::PipelineFullscreen2D full2dPipe;
    Eng::PipelineDeferred deferredPipe;
 
 ///////////////
@@ -103,7 +106,8 @@ void keyboardCallback(int key, int scancode, int action, int mods)
    // ENG_LOG_DEBUG("key: %d, scancode: %d, action: %d, mods: %d", key, scancode, action, mods);
    switch (key)
    {
-      case 'W': if (action == 0) dfltPipe.setWireframe(!dfltPipe.isWireframe()); break;         
+	   case 'W': if (action == 0) dfltPipe.setWireframe(!dfltPipe.isWireframe()); break;
+       case 'F': if (action == 0) renderFullScreen = !renderFullScreen; break;
    }
 }
 
@@ -160,15 +164,11 @@ int main(int argc, char *argv[])
 
    // Get light ref:
    std::reference_wrapper<Eng::Light> light = dynamic_cast<Eng::Light&>(Eng::Container::getInstance().find("Omni001"));
-	//light.get().setProjMatrix(glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f)); // Orthographic projection
+   //light.get().setProjMatrix(glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f)); // Orthographic projection
    light.get().setProjMatrix(glm::perspective(glm::radians(75.0f), 1.0f, 1.0f, 1000.0f)); // Perspective projection         
 
    // Get torus knot ref:
    std::reference_wrapper<Eng::Mesh> tknot = dynamic_cast<Eng::Mesh&>(Eng::Container::getInstance().find("Torus Knot001"));
-
-	// Get a material and set its emission:
-   std::reference_wrapper<Eng::Material> mtl = dynamic_cast<Eng::Material &>(Eng::Container::getInstance().find("01 - Default"));
-   mtl.get().setEmission({ 0.0f, 0.0f, 0.0f });
 
    // Rendering elements:
    Eng::List list;
@@ -184,8 +184,11 @@ int main(int argc, char *argv[])
    {
 
        // Update viewpoint:
-       camera.setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, transZ)));
-       root.get().setMatrix(glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotX), { 1.0f, 0.0f, 0.0f }), glm::radians(rotY), { 0.0f, 1.0f, 0.0f }));
+       glm::mat4 tmp = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-rotY), { 0.0f, 1.0f, 0.0f }), glm::radians(-rotX), { 1.0f, 0.0f, 0.0f });
+       tmp = tmp * glm::mat4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, transZ)));
+       camera.setMatrix(tmp);
+
+       tknot.get().setMatrix(glm::rotate(tknot.get().getMatrix(), glm::radians(0.01f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
        // Update list:
        list.reset();
@@ -196,6 +199,14 @@ int main(int argc, char *argv[])
 
    	   // dfltPipe.render(camera, list);
        deferredPipe.render(camera, list);
+
+       if (renderFullScreen) {
+
+           eng.clear();
+
+           full2dPipe.render(deferredPipe.getNormalBuffer(), list);
+
+       }
 
    	   eng.swap();
 

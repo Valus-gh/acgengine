@@ -112,8 +112,6 @@
     <ClCompile Include="engine_pipeline_default.cpp" />
     <ClCompile Include="engine_pipeline_deferred.cpp" />
     <ClCompile Include="engine_pipeline_fullscreen2d.cpp" />
-    <ClCompile Include="engine_pipeline_fullscreenLighting.cpp" />
-    <ClCompile Include="engine_pipeline_geomBuffer.cpp" />
     <ClCompile Include="engine_pipeline_shadowmapping.cpp" />
     <ClCompile Include="engine_program.cpp" />
     <ClCompile Include="engine_serializer.cpp" />
@@ -144,8 +142,6 @@
     <ClInclude Include="engine_pipeline_default.h" />
     <ClInclude Include="engine_pipeline_deferred.h" />
     <ClInclude Include="engine_pipeline_fullscreen2d.h" />
-    <ClInclude Include="engine_pipeline_fullscreenLighting.h" />
-    <ClInclude Include="engine_pipeline_geomBuffer.h" />
     <ClInclude Include="engine_pipeline_shadowmapping.h" />
     <ClInclude Include="engine_program.h" />
     <ClInclude Include="engine_serializer.h" />

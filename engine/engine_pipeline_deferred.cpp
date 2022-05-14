@@ -159,27 +159,6 @@ in vec2 uv;
 // Output to the framebuffer:
 out vec4 outFragment;
 
-/**
- * Computes the amount of shadow for a given fragment.
- * @param fragPosLightSpace frament coords in light space
- * @return shadow intensity
- */
-float shadowAmount(vec4 fragPosLightSpace)
-{
-   // From "clip" to "ndc" coords:
-   vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    
-   // Transform to the [0,1] range:
-   projCoords = projCoords * 0.5f + 0.5f;
-   
-   // Get closest depth in the shadow map:
-   float closestDepth = texture(texture3, projCoords.xy).r;    
-
-   // Check whether current fragment is in shadow:
-   return projCoords.z > closestDepth  ? 1.0f : 0.0f;   
-}
-
-
 void main()
 {
 
@@ -188,13 +167,14 @@ void main()
    vec4 pixWorldPos     = texture(texture0, uv);
    vec4 pixWorldNormal  = texture(texture1, uv);
    vec4 pixMaterial     = texture(texture2, uv);
+   vec4 pixShadow       = texture(texture3, uv);
 
    float metalness      = pixWorldNormal.w;
    float roughness      = pixMaterial.w;
 
-   float a = camPosition.x + lightPosition.x + lightColor.x + metalness + roughness;
+   float justUseIt = camPosition.x + lightPosition.x + lightColor.x + metalness + roughness;
 
-   outFragment = vec4(pixWorldPos.xyz, a);
+   outFragment = vec4(pixWorldPos.xyz, justUseIt);
 
 })";
 
@@ -537,10 +517,10 @@ bool ENG_API Eng::PipelineDeferred::render(const Eng::Camera& camera, const Eng:
 
 	reserved->program_lighting.render();
 
-	reserved->posTex.render(0);
-	reserved->normalTex.render(1);
-	reserved->matTex.render(2);
-	reserved->shadowMapping.getShadowMap().render(3);
+	getPositionBuffer().render(0);
+	getNormalBuffer().render(1);
+	getMaterialBuffer().render(2);
+	getShadowMappingPipeline().getShadowMap().render(3);
 
 	// Pass camera position and light position and color parameters
 
@@ -557,7 +537,7 @@ bool ENG_API Eng::PipelineDeferred::render(const Eng::Camera& camera, const Eng:
 	// Points are in world coordinates, no need to go back from eye coordinates
 	glm::mat4 lightMatrix = light.getProjMatrix() * glm::inverse(light.getWorldMatrix());
 	light.render(0, &lightMatrix);
-	program.setMat4("lightMatrix", lightMatrix);
+	reserved->program_lighting.setMat4("lightMatrix", lightMatrix);
 
 	// Render scene via GBuffer content with lighting
 
