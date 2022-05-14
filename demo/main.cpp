@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
        if (renderFullScreen) {
 
            eng.clear();
-
+           //full2dPipe.render(deferredPipe.getMaterialBuffer(), list);
            full2dPipe.render(deferredPipe.getNormalBuffer(), list);
 
        }

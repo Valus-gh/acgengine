@@ -70,9 +70,9 @@ in mat3 tbn;
 in vec2 uv;
 
 // Output to the framebuffer:
-layout(location=0) out vec4 positionOut;
-layout(location=1) out vec4 normalOut;
-layout(location=2) out vec4 albedoOut;
+layout(location=0) out vec4 positionOut; // position in world coordinates of the fragment
+layout(location=1) out vec4 normalOut;   // normal of the fragment + metalness
+layout(location=2) out vec4 albedoOut;   // albedo of the fragment + roughness
 
 /**
  * Uncompresses the normal and brings it into [-1, 1]^3
@@ -139,13 +139,10 @@ const std::string pipeline_fs_lighting = R"(
 const float PI = 3.14159265359;
 
 // Uniform (textures):
-layout (bindless_sampler) uniform sampler2D texture0;
-layout (bindless_sampler) uniform sampler2D texture1;
-layout (bindless_sampler) uniform sampler2D texture2;
-layout (bindless_sampler) uniform sampler2D texture3;
-
-// Uniform (material):
-
+layout (bindless_sampler) uniform sampler2D texture0; // fragment position in world coordinates
+layout (bindless_sampler) uniform sampler2D texture1; // fragment normals + metalness
+layout (bindless_sampler) uniform sampler2D texture2; // fragment albedo + roughness
+layout (bindless_sampler) uniform sampler2D texture3; // fragment shadow ?
 
 // Uniform (light and camera):
 uniform vec3 camPosition;     // Camera position in World-Space
@@ -159,9 +156,60 @@ in vec2 uv;
 // Output to the framebuffer:
 out vec4 outFragment;
 
+vec3 F0(vec3 dielectric, vec3 albedo, float metalness)
+{
+   return mix(dielectric, albedo, metalness);
+}
+
+float D_GGX(vec3 N, vec3 H, float roughness)
+{
+   float alpha = roughness * roughness;
+   float alpha_2 = alpha * alpha;
+   float cosNH   = max(0.0f, dot(N, H));
+   //float cosNH   = dot(N, H);
+   float cosNH_2 = cosNH * cosNH;
+   float num     = alpha_2;
+   float denom   = PI *  pow(cosNH_2 * (alpha_2 - 1.0f) + 1.0f, 2.0f);
+   return num / denom;
+}
+
+vec3 F_schlick(vec3 f0, vec3 H, vec3 V)
+{
+   float cosHV = max(0.0f, dot(H, V));
+   return f0 + (1.0f - f0) * pow(clamp(1.0 - cosHV, 0.0f, 1.0f), 5.0f); 
+}
+
+float G_schlickGGX(vec3 N, vec3 V, float alpha)
+{
+   float cosNV = max(0.0f, dot(N, V));
+   float k     = pow(alpha + 1.0f, 2.0f) / 8.0f;
+   float num   = cosNV;
+   float denom = cosNV * (1.0f - k) + k;
+   return num / denom;
+}
+
+vec3 lambert(vec3 albedo)
+{
+  return albedo / PI;
+}
+
+vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float alpha, float metal)
+{
+   // Fresnel base reflectivity at 0 deg incidence
+   vec3 fb = F0(vec3(0.04f), albedo, metal);
+   float D = D_GGX(N, H, alpha);
+   vec3  F = F_schlick(fb, H, V);
+   float G = G_schlickGGX(N, H, alpha);
+   float cosVN = max(0.0f, dot(V, N));
+   float cosLN = max(0.0f, dot(L, N));
+   vec3 num    = D * F * G;
+   float denom = 0.01f + 4 * cosVN * cosLN;
+   return num / denom;
+   
+}
+
 void main()
 {
-
 
    // Texture lookup:
    vec4 pixWorldPos     = texture(texture0, uv);
@@ -174,7 +222,25 @@ void main()
 
    float justUseIt = camPosition.x + lightPosition.x + lightColor.x + metalness + roughness;
 
-   outFragment = vec4(pixWorldPos.xyz, justUseIt);
+   vec3 N = pixWorldNormal.xyz;
+   vec3 V = normalize(camPosition - pixWorldPos.xyz);
+   vec3 L = normalize(lightPosition - pixWorldPos.xyz);
+   vec3 H = normalize(V+L);
+
+   // PBR calculations
+
+   vec3 fLB = lambert(pixMaterial.xyz);
+   vec3 fCT = cook_torrance(N, L, V, H, pixMaterial.xyz, roughness, metalness);
+
+   vec3 fb = F0(vec3(0.04f), pixMaterial.xyz, metalness);
+   vec3 ks = F_schlick(fb, H, V);
+   vec3 kd = (vec3(1.0f) - ks) * (1 - metalness);
+   
+   vec3 fr = kd * fLB + ks * fCT;
+   //float shadow = 1.0f - shadowAmount(pixShadow);
+   //fr = fr * shadow;
+
+   outFragment = vec4(fr * lightColor.xyz, justUseIt);
 
 })";
 
@@ -406,7 +472,7 @@ bool ENG_API Eng::PipelineDeferred::init()
 	{
 		ENG_LOG_ERROR("Unable to init depth texture");
 		return false;
-	}
+	} 
 
 	// GBuffer FBO:
 	reserved->fbo.attachTexture(reserved->posTex);
@@ -496,7 +562,6 @@ bool ENG_API Eng::PipelineDeferred::render(const Eng::Camera& camera, const Eng:
 	}
 
 	// Render scene data to geometry buffer
-
 	program.render();
 	camera.render();
 
