@@ -393,6 +393,25 @@ bool ENG_API Eng::Texture::load(const Eng::Bitmap& bitmap)
         _format = Format::r8g8b8;
         break;
 
+
+        ////////////////////////////////////
+    case Eng::Bitmap::Format::rgb_float: //         
+        intFormat = GL_RGB16;
+        extFormat = GL_RGB;
+        extType = GL_FLOAT;
+        nrOfComponents = 3;
+        _format = Format::rgb_float;
+        break;
+
+        //////////////////////////////////////
+    case Eng::Bitmap::Format::rgba_float: //		   
+        intFormat = GL_RGBA16;
+        extFormat = GL_RGBA;
+        extType = GL_FLOAT;
+        nrOfComponents = 4;
+        _format = Format::rgba_float;
+        break;
+
         /////////////////////////////////////////////////
     case Eng::Bitmap::Format::r8g8b8a8_compressed: //		   
         intFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
@@ -428,6 +447,8 @@ bool ENG_API Eng::Texture::load(const Eng::Bitmap& bitmap)
         nrOfComponents = 1;
         _format = Format::r8_compressed;
         break;
+
+
 
         ///////////
     default: //
@@ -532,7 +553,6 @@ bool ENG_API Eng::Texture::create(uint32_t sizeX, uint32_t sizeY, Format format)
         extType = GL_FLOAT;
         nrOfComponents = 1;
         break;
-
 
         /////////////////////////
     case Format::rgb_float: //    

@@ -212,11 +212,14 @@ bool ENG_API Eng::List::render(const glm::mat4& cameraMatrix, Eng::List::Pass pa
 	}
 
 	// Iterate through the range:
+	RenderableElemInfo info;
+	info.camMatrix = cameraMatrix;
+
 	for (size_t c = startRange; c < endRange; c++)
 	{
 		RenderableElem& re = reserved->renderableElem.at(c);
-		glm::mat4 finalMatrix = cameraMatrix * re.matrix;
-		re.reference.get().render(0, &finalMatrix);
+		info.objMatrix = re.matrix;
+		re.reference.get().render(0, &info);
 	}
 
 	// Done:

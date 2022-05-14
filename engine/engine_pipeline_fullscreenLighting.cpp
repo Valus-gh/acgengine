@@ -323,6 +323,7 @@ bool ENG_API Eng::PipelineFullscreenLighting::render(const Eng::PipelineGeometry
    float x = camMat[3][0];
    float y = camMat[3][1];
    float z = camMat[3][2];
+   // glm::vec3 camPos = glm::vec3(x, y, z);
    glm::vec3 camPos = glm::vec3(x, y, z);
 
    glm::mat4 lightMatrix = light.getMatrix();
@@ -341,7 +342,6 @@ bool ENG_API Eng::PipelineFullscreenLighting::render(const Eng::PipelineGeometry
    glm::mat4 lvm = glm::inverse( lightMatrix );
    glm::mat4 lightFinalMatrix = lpm* lvm; // lvm; // To convert from eye coords into light space
    program.setMat4("lightMatrix", lightFinalMatrix);
-
 
    Eng::Base &eng = Eng::Base::getInstance();
    Eng::Fbo::reset(eng.getWindowSize().x, eng.getWindowSize().y);   

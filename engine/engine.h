@@ -100,11 +100,11 @@ namespace Eng
 #include "engine_pipeline.h"
 #include "engine_pipeline_shadowmapping.h"
 #include "engine_pipeline_fullscreen2d.h"
-#include "engine_pipeline_default.h"
 #include "engine_pipeline_geomBuffer.h"
 #include "engine_pipeline_fullscreenLighting.h"
-#include "engine_pipeline_deferred.h"
 
+#include "engine_pipeline_default.h"
+#include "engine_pipeline_deferred.h"
 
 	///////////////////////
 	// MAIN ENGINE CLASS //

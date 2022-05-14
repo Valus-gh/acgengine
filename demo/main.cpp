@@ -32,7 +32,6 @@
 
    // Main rendering pipeline:
    Eng::PipelineDefault dfltPipe;
-   Eng::PipelineFullscreen2D full2dPipe;
    Eng::PipelineDeferred deferredPipe;
 
 ///////////////
@@ -161,8 +160,7 @@ int main(int argc, char *argv[])
 
    // Get light ref:
    std::reference_wrapper<Eng::Light> light = dynamic_cast<Eng::Light&>(Eng::Container::getInstance().find("Omni001"));
-
-	// light.get().setProjMatrix(glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f)); // Orthographic projection
+	//light.get().setProjMatrix(glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f)); // Orthographic projection
    light.get().setProjMatrix(glm::perspective(glm::radians(75.0f), 1.0f, 1.0f, 1000.0f)); // Perspective projection         
 
    // Get torus knot ref:
@@ -195,14 +193,9 @@ int main(int argc, char *argv[])
 
        // Main rendering:
        eng.clear();
-       //dfltPipe.render(camera, list);
-       // // Uncomment the following two lines for displaying the shadow map:
-       // eng.clear();
-       // full2dPipe.render(dfltPipe.getShadowMappingPipeline().getShadowMap(), list);
 
-
+   	   // dfltPipe.render(camera, list);
        deferredPipe.render(camera, list);
-
 
    	   eng.swap();
 

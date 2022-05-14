@@ -52,6 +52,14 @@ public: //
 		RenderableElem() : reference{Eng::Object::empty}, matrix{1.0f} {}
 	};
 
+	/**
+	* @brief Renderable element info
+	*/
+	struct RenderableElemInfo
+	{
+		glm::mat4 objMatrix;                                     ///< object Matrix
+		glm::mat4 camMatrix;                                     ///< camera Matrix
+	};
 
 	// Const/dest:
 	List();

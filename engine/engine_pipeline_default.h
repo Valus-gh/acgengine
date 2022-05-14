@@ -24,6 +24,7 @@ public: //
 
 	// Get/set:
 	const Eng::PipelineShadowMapping& getShadowMappingPipeline() const;
+	const Eng::PipelineGeometry& getGeometryPipeline() const;
 	void setWireframe(bool flag);
 	bool isWireframe() const;
 

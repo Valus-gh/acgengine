@@ -83,7 +83,6 @@ layout(location=0) out vec4 positionOut;
 layout(location=1) out vec4 normalOut;
 layout(location=2) out vec4 albedoOut;
 
-
 /**
  * Uncompresses the normal and brings it into [-1, 1]^3
  * @param texNormal  normal read from texture
