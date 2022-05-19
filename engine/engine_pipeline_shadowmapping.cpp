@@ -169,7 +169,7 @@ bool ENG_API Eng::PipelineShadowMapping::init()
    this->setProgram(reserved->program);
 
    // Depth map:
-   if (reserved->depthMap.create(depthTextureSize, depthTextureSize, Eng::Texture::Format::depth) == false)
+   if (reserved->depthMap.create(depthTextureSize, depthTextureSize, Eng::Texture::Format::depth, false) == false)
    {
       ENG_LOG_ERROR("Unable to init depth map");
       return false;

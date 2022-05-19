@@ -45,12 +45,13 @@ struct Eng::Texture::Reserved
     GLuint oglId;                    ///< OpenGL texture ID   
     GLuint64 oglBindlessHandle;      ///< GL_ARB_bindless_texture special handle
 
+    bool isCubemap;
 
     /**
      * Constructor.
      */
     Reserved() : bitmap{ Eng::Bitmap::empty }, format{ Eng::Texture::Format::none }, size{ 0, 0, 1 },
-        oglId{ 0 }, oglBindlessHandle{ 0 }
+        oglId{ 0 }, oglBindlessHandle{ 0 }, isCubemap{ false }
     {}
 };
 
@@ -246,6 +247,15 @@ uint64_t ENG_API Eng::Texture::getOglBindlessHandle() const
     return reserved->oglBindlessHandle;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Returns whether the texture is a cubemap or not.
+ * @return true/false
+ */
+bool ENG_API Eng::Texture::isCubemap() const
+{
+    return reserved->isCubemap;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -493,7 +503,7 @@ bool ENG_API Eng::Texture::load(const Eng::Bitmap& bitmap)
  * @param format pixel layout
  * @return TF
  */
-bool ENG_API Eng::Texture::create(uint32_t sizeX, uint32_t sizeY, Format format)
+bool ENG_API Eng::Texture::create(uint32_t sizeX, uint32_t sizeY, Format format, bool isCubemap)
 {
     // Safety net:
     if (sizeX == 0 || sizeY == 0 || format == Format::none)
@@ -542,23 +552,52 @@ bool ENG_API Eng::Texture::create(uint32_t sizeX, uint32_t sizeY, Format format)
     // Init texture:
     this->Eng::Texture::init();
 
-    // Create it:		    
-    const GLuint oglId = this->getOglHandle();
-    glBindTexture(GL_TEXTURE_2D, oglId);
-    glTexImage2D(GL_TEXTURE_2D, 0, intFormat, sizeX, sizeY, 0, extFormat, extType, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    if (format == Format::depth)
+    if (!isCubemap) {
+
+        // Create it:		    
+        const GLuint oglId = this->getOglHandle();
+        glBindTexture(GL_TEXTURE_2D, oglId);
+        glTexImage2D(GL_TEXTURE_2D, 0, intFormat, sizeX, sizeY, 0, extFormat, extType, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+        if (format == Format::depth)
+        {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+        }
+
+    }else
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+        const GLuint oglId = this->getOglHandle();
+        glBindTexture(GL_TEXTURE_CUBE_MAP, oglId);
+
+        for (unsigned int i = 0; i < 6; i++)
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i , 0, intFormat, sizeX, sizeY, 0, extFormat, extType, nullptr);
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+
+        if (format == Format::depth)
+        {
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, borderColor);
+        }
+
     }
 
     // Resident:

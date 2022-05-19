@@ -244,26 +244,55 @@ bool ENG_API Eng::Fbo::attachTexture(const Eng::Texture &texture, uint32_t level
    att.size = glm::u32vec2{ texture.getSizeX(), texture.getSizeY() };   
    
    glBindFramebuffer(GL_FRAMEBUFFER, reserved->oglId);
-   switch (texture.getFormat())
+
+   if (!texture.isCubemap()) {
+
+       switch (texture.getFormat())
+       {
+           /////////////////////////////////////
+       case Eng::Texture::Format::r8g8b8: //
+       case Eng::Texture::Format::r8g8b8a8:
+           att.type = Eng::Fbo::Attachment::Type::color_texture;
+           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attId, GL_TEXTURE_2D, texture.getOglHandle(), 0);
+           break;
+
+           ////////////////////////////////////
+       case Eng::Texture::Format::depth: //
+           att.type = Eng::Fbo::Attachment::Type::depth_texture;
+           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.getOglHandle(), 0);
+           break;
+
+           ///////////
+       default: //
+           ENG_LOG_ERROR("Unsupported texture format");
+           return false;
+       }
+
+   }else
    {
-      /////////////////////////////////////
-      case Eng::Texture::Format::r8g8b8: //
-      case Eng::Texture::Format::r8g8b8a8:         
-         att.type = Eng::Fbo::Attachment::Type::color_texture;
-         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attId, GL_TEXTURE_2D, texture.getOglHandle(), 0);								
-         break;
 
-      ////////////////////////////////////
-      case Eng::Texture::Format::depth: //
-         att.type = Eng::Fbo::Attachment::Type::depth_texture;
-         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.getOglHandle(), 0);         
-         break;
+       switch (texture.getFormat())
+       {
+           /////////////////////////////////////
+       case Eng::Texture::Format::r8g8b8: //
+       case Eng::Texture::Format::r8g8b8a8:
+           att.type = Eng::Fbo::Attachment::Type::color_texture;
+           glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attId, texture.getOglHandle(), 0);
+           break;
 
-      ///////////
-      default: //
-         ENG_LOG_ERROR("Unsupported texture format");   
-         return false;
-   }      
+           ////////////////////////////////////
+       case Eng::Texture::Format::depth: //
+           att.type = Eng::Fbo::Attachment::Type::depth_texture;
+           glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture.getOglHandle(), 0);
+           break;
+
+           ///////////
+       default: //
+           ENG_LOG_ERROR("Unsupported 3d texture format");
+           return false;
+       }
+
+   }
 
    // Done:   
    reserved->attachment.push_back(att);

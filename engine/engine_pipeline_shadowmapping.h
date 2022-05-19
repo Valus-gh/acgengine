@@ -20,10 +20,9 @@ public: //
    // Special values:
    constexpr static uint32_t depthTextureSize = 1024;     ///< Size of the depth map
 
-   
    // Const/dest:
-	PipelineShadowMapping();      
-	PipelineShadowMapping(PipelineShadowMapping &&other);
+   PipelineShadowMapping();      
+   PipelineShadowMapping(PipelineShadowMapping &&other);
    PipelineShadowMapping(PipelineShadowMapping const&) = delete;   
    virtual ~PipelineShadowMapping(); 
 

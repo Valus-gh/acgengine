@@ -82,9 +82,11 @@ public: //
 	uint32_t getOglHandle() const;
 	uint64_t getOglBindlessHandle() const;
 
+	bool isCubemap() const;
+
 	// Bitmap:
 	bool load(const Eng::Bitmap& bitmap);
-	bool create(uint32_t sizeX, uint32_t sizeY, Format format);
+	bool create(uint32_t sizeX, uint32_t sizeY, Format format, bool isCubemap);
 
 	// Rendering methods:
 	bool render(uint32_t value = 0, void* data = nullptr) const;
