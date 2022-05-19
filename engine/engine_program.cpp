@@ -232,11 +232,11 @@ bool ENG_API Eng::Program::build(std::initializer_list<std::reference_wrapper<En
     }
 
     // Validate possible configurations:
-    if (this->getNrOfShaders() >= 3)
-    {
-        ENG_LOG_ERROR("Invalid/unsupported shader sequence");
-        return false;
-    }
+    // if (this->getNrOfShaders() >= 3)
+    // {
+    //     ENG_LOG_ERROR("Invalid/unsupported shader sequence");
+    //     return false;
+    // }
 
     // Init program:
     this->init();
@@ -487,6 +487,23 @@ bool ENG_API Eng::Program::setMat4(const std::string& name, const glm::mat4& val
     return true;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Set a uniform value of type mat4 vector.
+ * @param name variable name
+ * @param value variable value
+ * @return TF
+ */
+bool ENG_API Eng::Program::setMat4v(const std::string& name, const glm::mat4& value, uint32_t n)
+{
+    GLint location = getParamLocation(name);
+    if (location == -1)
+        return false;
+
+    // Done:
+    glUniformMatrix4fv(location, n, GL_FALSE, glm::value_ptr(value));
+    return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**

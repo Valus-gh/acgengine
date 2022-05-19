@@ -38,12 +38,13 @@ layout(location = 2) in vec2 a_uv;
 layout(location = 3) in vec4 a_tangent;
 
 // Uniforms:
-uniform mat4 modelviewMat;
+uniform mat4 modelMat;
+uniform mat4 viewMat;
 uniform mat4 projectionMat;
 
 void main()
 {   
-   gl_Position = projectionMat *  modelviewMat * vec4(a_vertex, 1.0f);
+   gl_Position = projectionMat * viewMat * modelMat * vec4(a_vertex, 1.0f);
 })";
 
 

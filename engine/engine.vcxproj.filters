@@ -96,6 +96,9 @@
     <ClCompile Include="engine_pipeline_shadowmapping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="engine_pipeline_cubemap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="engine_pipeline_point_shadows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -180,6 +183,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine_pipeline_shadowmapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine_pipeline_cubemap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine_pipeline_point_shadows.h">

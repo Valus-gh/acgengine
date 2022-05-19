@@ -36,7 +36,8 @@ layout(location = 2) in vec2 a_uv;
 layout(location = 3) in vec4 a_tangent;
 
 // Uniforms:
-uniform mat4 modelviewMat;
+uniform mat4 modelMat;
+uniform mat4 viewMat;
 uniform mat4 projectionMat;
 uniform mat3 normalMat;
 uniform mat4 lightMatrix;
@@ -62,7 +63,7 @@ void main()
 
    uv = a_uv;
 
-   fragPosition = modelviewMat * vec4(a_vertex, 1.0f);
+   fragPosition = viewMat * modelMat * vec4(a_vertex, 1.0f);
    fragPositionLightSpace = lightMatrix * fragPosition;
    gl_Position = projectionMat * fragPosition;
 

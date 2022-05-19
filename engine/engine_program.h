@@ -52,6 +52,7 @@ public: //
 	bool setVec4(const std::string& name, const glm::vec4& value);
 	bool setMat3(const std::string& name, const glm::mat3& value);
 	bool setMat4(const std::string& name, const glm::mat4& value);
+	bool setMat4v(const std::string& name, const glm::mat4& value, uint32_t n);
 
 	// Building:
 	bool build(std::initializer_list<std::reference_wrapper<Eng::Shader>> args);

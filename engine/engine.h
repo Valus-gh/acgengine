@@ -101,6 +101,7 @@ namespace Eng
 #include "engine_pipeline_shadowmapping.h"
 #include "engine_pipeline_fullscreen2d.h"
 #include "engine_pipeline_default.h"
+#include "engine_pipeline_cubemap.h"
 #include "engine_pipeline_point_shadows.h"
 
 	///////////////////////

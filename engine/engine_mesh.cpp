@@ -232,8 +232,12 @@ uint32_t ENG_API Eng::Mesh::loadChunk(Eng::Serializer& serial, void* data)
 bool ENG_API Eng::Mesh::render(uint32_t value, void* data) const
 {
 	Eng::Program& program = dynamic_cast<Eng::Program&>(Eng::Program::getCached());
-	program.setMat4("modelviewMat", *((glm::mat4*)data));
-	program.setMat3("normalMat", glm::inverseTranspose(glm::mat3(*((glm::mat4*)data))));
+
+	Eng::List::RenderableElemInfo* info = (Eng::List::RenderableElemInfo*)data;
+
+	program.setMat4("modelMat", info->objMatrix);
+	program.setMat4("viewMat", info->camMatrix);
+	program.setMat3("normalMat", glm::inverseTranspose(glm::mat3(info->objMatrix)));
 
 	reserved->material.get().render();
 
