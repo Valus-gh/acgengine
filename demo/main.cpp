@@ -35,6 +35,9 @@
    Eng::PipelineFullscreen2D full2dPipe;
    Eng::PipelinePointShadows pointShadowsPipe;
 
+   Eng::Camera camera;
+
+
 ///////////////
 // CALLBACKS //
 ///////////////
@@ -109,8 +112,8 @@ void keyboardCallback(int key, int scancode, int action, int mods)
    {
       case 'W': if (action == 0) dfltPipe.setWireframe(!dfltPipe.isWireframe()); break;
 
-      case 'Z': light.get().setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{ 0.0f, 0.0f, 1.0f })); break;
-      case 'X': light.get().setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{ 0.0f, 0.0f, -1.0f })); break;
+      case 'Z': light.get().setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{ 0.0f, 1.0f, 0.0f })); break;
+      case 'X': light.get().setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{ 0.0f, -1.0f, 0.0f })); break;
    }
 }
 
@@ -162,7 +165,7 @@ int main(int argc, char *argv[])
    /////////////////
    // Loading scene:   
    Eng::Ovo ovo;
-   std::reference_wrapper<Eng::Node> root = ovo.load("simple3dScene.OVO");
+   std::reference_wrapper<Eng::Node> root = ovo.load("pointshadows.OVO");
    std::cout << "Scene graph:\n" << root.get().getTreeAsString() << std::endl;
 
    // Get light ref:
@@ -176,7 +179,12 @@ int main(int argc, char *argv[])
    Eng::Camera camera;
    camera.setProjMatrix(glm::perspective(glm::radians(45.0f), eng.getWindowSize().x / (float)eng.getWindowSize().y, 1.0f, 1000.0f));
 
-   std::reference_wrapper<Eng::Mesh> plane = dynamic_cast<Eng::Mesh&>(Eng::Container::getInstance().find("Plane001"));
+   Eng::Light light1 = Eng::Light{};
+   light1.setAmbient(light.get().getAmbient());
+   light1.setColor(light.get().getColor());
+   light1.setProjMatrix(light.get().getProjMatrix());
+   light1.setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{64.0f, 64.0f, 0.0f}));
+   root.get().addChild(light1);
 
    /////////////
    // Main loop:
@@ -186,7 +194,7 @@ int main(int argc, char *argv[])
    {
 
        // Update viewpoint:
-       camera.setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, transZ)));
+       camera.setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 128.0f, transZ)));
        root.get().setMatrix(glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotX), { 1.0f, 0.0f, 0.0f }), glm::radians(rotY), { 0.0f, 1.0f, 0.0f }));
 
        // Update list:

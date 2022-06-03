@@ -236,7 +236,7 @@ void main()
 
 // PBR //
 
-   outFragment = vec4(fr * lightColor.xyz * 1.15f, 1.0f);
+   outFragment = vec4(fr * lightColor.xyz, 1.0f);
 
 })";
 
@@ -440,7 +440,7 @@ bool ENG_API Eng::PipelinePointShadows::render(const Eng::Camera& camera, const 
 	// Multipass rendering:
 	for (uint32_t l = 0; l < list.getNrOfLights(); l++)
 	{
-		// Enable addictive blending from light 1 on:
+		// Enable additive blending from light 1 on:
 		if (l == 1)
 		{
 			glEnable(GL_BLEND);
