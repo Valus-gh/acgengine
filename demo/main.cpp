@@ -102,9 +102,15 @@ void mouseScrollCallback(double scrollX, double scrollY)
 void keyboardCallback(int key, int scancode, int action, int mods)
 {
    // ENG_LOG_DEBUG("key: %d, scancode: %d, action: %d, mods: %d", key, scancode, action, mods);
-   switch (key)
+    std::reference_wrapper<Eng::Light> light = dynamic_cast<Eng::Light&>(Eng::Container::getInstance().find("Omni001"));
+
+
+	switch (key)
    {
-      case 'W': if (action == 0) dfltPipe.setWireframe(!dfltPipe.isWireframe()); break;         
+      case 'W': if (action == 0) dfltPipe.setWireframe(!dfltPipe.isWireframe()); break;
+
+      case 'Z': light.get().setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{ 0.0f, 0.0f, 1.0f })); break;
+      case 'X': light.get().setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{ 0.0f, 0.0f, -1.0f })); break;
    }
 }
 
@@ -156,7 +162,7 @@ int main(int argc, char *argv[])
    /////////////////
    // Loading scene:   
    Eng::Ovo ovo;
-   std::reference_wrapper<Eng::Node> root = ovo.load("simple3dScene.ovo");
+   std::reference_wrapper<Eng::Node> root = ovo.load("simple3dScene.OVO");
    std::cout << "Scene graph:\n" << root.get().getTreeAsString() << std::endl;
 
    // Get light ref:
@@ -165,18 +171,12 @@ int main(int argc, char *argv[])
 	// light.get().setProjMatrix(glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f)); // Orthographic projection
    light.get().setProjMatrix(glm::perspective(glm::radians(75.0f), 1.0f, 1.0f, 1000.0f)); // Perspective projection         
 
-   // Get torus knot ref:
-   std::reference_wrapper<Eng::Mesh> tknot = dynamic_cast<Eng::Mesh&>(Eng::Container::getInstance().find("Torus Knot001"));
-
-	// Get a material and set its emission:
-   std::reference_wrapper<Eng::Material> mtl = dynamic_cast<Eng::Material &>(Eng::Container::getInstance().find("01 - Default"));
-   mtl.get().setEmission({ 0.0f, 0.0f, 0.0f });
-
    // Rendering elements:
    Eng::List list;
    Eng::Camera camera;
    camera.setProjMatrix(glm::perspective(glm::radians(45.0f), eng.getWindowSize().x / (float)eng.getWindowSize().y, 1.0f, 1000.0f));
 
+   std::reference_wrapper<Eng::Mesh> plane = dynamic_cast<Eng::Mesh&>(Eng::Container::getInstance().find("Plane001"));
 
    /////////////
    // Main loop:

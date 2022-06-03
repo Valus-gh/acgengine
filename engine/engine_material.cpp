@@ -11,6 +11,8 @@
 //////////////
 
 // Main include:
+#include <GL/glew.h>
+
 #include "engine.h"
 
 
@@ -389,6 +391,10 @@ uint32_t ENG_API Eng::Material::loadChunk(Eng::Serializer& serial, void* data)
  */
 bool ENG_API Eng::Material::render(uint32_t value, void* data) const
 {
+
+	Eng::Program& program = dynamic_cast<Eng::Program&>(Eng::Program::getCached());
+	program.setVec3("albedo", reserved->albedo);
+
 	// Pass textures:
 	for (uint32_t c = 0; c < Eng::Material::maxNrOfTextures; c++)
 		if (reserved->texture[c].get() != Eng::Texture::empty)

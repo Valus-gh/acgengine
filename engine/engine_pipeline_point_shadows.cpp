@@ -78,6 +78,7 @@ layout (bindless_sampler) uniform samplerCube texture4; // Shadow map
 
 uniform mat4 viewMat;
 uniform float farPlane;
+uniform vec3 albedo;
 
 // Uniform (light):
 uniform vec3 lightColor;
@@ -235,7 +236,7 @@ void main()
 
 // PBR //
 
-   outFragment = vec4(fr * lightColor.xyz, 1.0f);
+   outFragment = vec4(fr * lightColor.xyz * 1.15f, 1.0f);
 
 })";
 
