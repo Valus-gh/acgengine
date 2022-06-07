@@ -179,12 +179,12 @@ int main(int argc, char *argv[])
    Eng::Camera camera;
    camera.setProjMatrix(glm::perspective(glm::radians(45.0f), eng.getWindowSize().x / (float)eng.getWindowSize().y, 1.0f, 1000.0f));
 
-   Eng::Light light1 = Eng::Light{};
-   light1.setAmbient(light.get().getAmbient());
-   light1.setColor(light.get().getColor());
-   light1.setProjMatrix(light.get().getProjMatrix());
-   light1.setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{64.0f, 64.0f, 0.0f}));
-   root.get().addChild(light1);
+   // Eng::Light light1 = Eng::Light{};
+   // light1.setAmbient(light.get().getAmbient());
+   // light1.setColor(light.get().getColor());
+   // light1.setProjMatrix(light.get().getProjMatrix());
+   // light1.setMatrix(glm::translate(light.get().getMatrix(), glm::vec3{64.0f, 64.0f, 0.0f}));
+   // root.get().addChild(light1);
 
    /////////////
    // Main loop:

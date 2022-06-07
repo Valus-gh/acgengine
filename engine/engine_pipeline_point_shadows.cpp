@@ -101,11 +101,13 @@ out vec4 outFragment;
 float shadowAmount(vec3 worldFragPosition)
 {
 
+   
+
    vec3 fragmentToLight = worldFragPosition - lightPosition;
 
    float closestDepth = texture(texture4, fragmentToLight).r * farPlane;
    float currentDepth = length(fragmentToLight);
-   float bias = 0.05f;
+   float bias = farPlane * 0.0005f;
 
    float shadow = (currentDepth - bias > closestDepth) ? 1.0f : 0.0f;
 
