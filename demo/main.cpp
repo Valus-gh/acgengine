@@ -90,7 +90,7 @@ void mouseButtonCallback(int button, int action, int mods)
 void mouseScrollCallback(double scrollX, double scrollY)
 {
    // ENG_LOG_DEBUG("x: %.1f, y: %.1f", scrollX, scrollY);
-   transZ -= (float) scrollY;
+   transZ -= (float) scrollY * 5.0f;
 }
 
 
@@ -172,7 +172,6 @@ int main(int argc, char *argv[])
    std::reference_wrapper<Eng::Light> light = dynamic_cast<Eng::Light&>(Eng::Container::getInstance().find("Omni001"));
 
 	// light.get().setProjMatrix(glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f)); // Orthographic projection
-   light.get().setProjMatrix(glm::perspective(glm::radians(75.0f), 1.0f, 1.0f, 1000.0f)); // Perspective projection         
 
    // Rendering elements:
    Eng::List list;
@@ -194,7 +193,7 @@ int main(int argc, char *argv[])
    {
 
        // Update viewpoint:
-       camera.setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 128.0f, transZ)));
+       camera.setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 128.0f, 256.0f + transZ)));
        root.get().setMatrix(glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotX), { 1.0f, 0.0f, 0.0f }), glm::radians(rotY), { 0.0f, 1.0f, 0.0f }));
 
        // Update list:

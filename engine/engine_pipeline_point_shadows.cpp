@@ -101,8 +101,6 @@ out vec4 outFragment;
 float shadowAmount(vec3 worldFragPosition)
 {
 
-   
-
    vec3 fragmentToLight = worldFragPosition - lightPosition;
 
    float closestDepth = texture(texture4, fragmentToLight).r * farPlane;
@@ -111,6 +109,36 @@ float shadowAmount(vec3 worldFragPosition)
 
    float shadow = (currentDepth - bias > closestDepth) ? 1.0f : 0.0f;
 
+   return shadow;
+
+} 
+
+float shadowAmountPCF(vec3 worldFragPosition)
+{
+
+   float samples = 4.0f;
+   float offset = 1.0f;
+   float bias = farPlane * 0.0005f;
+   float shadow = 0.0f;
+
+   vec3 fragmentToLight = worldFragPosition - lightPosition;
+   float currentDepth = length(fragmentToLight);
+
+   for(float x = -offset; x < offset; x += offset / (samples * 0.5))
+   {
+      for(float y = -offset; y < offset; y += offset / (samples * 0.5))
+      {
+         for(float z = -offset; z < offset; z += offset / (samples * 0.5))
+         {
+            float closestDepth = texture(texture4, fragmentToLight + vec3(x, y, z)).r * farPlane; 
+            if(currentDepth - bias > closestDepth)
+                shadow += 1.0;
+         }
+      }
+   }
+
+   shadow /= pow(samples, 3.0f);
+   
    return shadow;
 
 } 
@@ -149,17 +177,29 @@ vec3 F_schlick(vec3 f0, vec3 H, vec3 V)
 
 }
 
-float G_schlickGGX(vec3 N, vec3 V, float alpha)
+float G_schlickGGX(float cosNV, float roughness)
 {
 
-   float cosNV = max(0.0f, dot(N, V));
+   float r = roughness + 1.0f;
+   float k = (r * r) / 8.0f;
 
-   float k     = pow(alpha + 1.0f, 2.0f) / 8.0f;
-
-   float num   = cosNV;
+   float num = cosNV;
    float denom = cosNV * (1.0f - k) + k;
 
    return num / denom;
+
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+
+   float cosNV = max(0.0f, dot(N, V));
+   float cosNL = max(0.0f, dot(N, L));
+
+   float ggx2 = G_schlickGGX(cosNV, roughness);
+   float ggx1 = G_schlickGGX(cosNL, roughness);
+
+   return ggx1 * ggx2;
 
 }
 
@@ -170,14 +210,14 @@ vec3 lambert(vec3 albedo)
 
 }
 
-vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float alpha, float metal)
+vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float roughness, float metal)
 {
    // Fresnel base reflectivity at 0 deg incidence
    vec3 fb = F0(vec3(0.04f), albedo, metal);
 
-   float D = D_GGX(N, H, alpha);
+   float D = D_GGX(N, H, roughness);
    vec3  F = F_schlick(fb, H, V);
-   float G = G_schlickGGX(N, H, alpha);
+   float G = GeometrySmith(N, V, L, roughness);
 
    float cosVN = max(0.0f, dot(V, N));
    float cosLN = max(0.0f, dot(L, N));
@@ -206,7 +246,8 @@ void main()
 
    vec4 fragPosition = viewMat * worldFragPosition;
 
-   vec3 N = tbn * normalize(normal3d);   
+   vec3 N = tbn * (normal3d);
+   N = normalize(N);
    vec3 V = normalize(-fragPosition.xyz);  
    vec3 L = normalize(lightPosition - fragPosition.xyz);
 
@@ -229,11 +270,12 @@ void main()
 
    // Final result
 
-   vec3 fr = kd * fLB + ks * fCT;
+   vec3 fr = (kd * fLB + ks * fCT);
 
    // Apply shadows
 
-   float shadow = 1.0f - shadowAmount(worldFragPosition.xyz);
+   float shadow = 1.0f - shadowAmountPCF(worldFragPosition.xyz);
+   //float shadow = 1.0f - shadowAmount(worldFragPosition.xyz);
    fr = fr * shadow;
 
 // PBR //
