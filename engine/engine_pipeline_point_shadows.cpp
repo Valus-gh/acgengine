@@ -269,7 +269,7 @@ void main()
 
    // Final result
 
-   float dist = length(lightPosition - worldFragPosition.xyz)/135.0f;
+   float dist = length(lightPosition - worldFragPosition.xyz)/200.0f;
    float att = 1.0f / (dist*dist);
    vec3 rad = lightColor * att;
    vec3 fr = (kd * fLB * rad + ks * fCT);
