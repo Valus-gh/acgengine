@@ -48,8 +48,8 @@ void main()
 
    vec3 bitangent = normalize(cross(normal, tangent));
 
-   //tbn = transpose(mat3(tangent, bitangent, normal));
-   tbn = mat3(tangent, bitangent, normal);
+   tbn = transpose(mat3(tangent, bitangent, normal));
+   //tbn = mat3(tangent, bitangent, normal);
 
    uv = a_uv;
 
@@ -222,8 +222,8 @@ vec3 cook_torrance(vec3 N, vec3 L, vec3 V, vec3 H, vec3 albedo, float roughness,
    float cosVN = max(0.0f, dot(V, N));
    float cosLN = max(0.0f, dot(L, N));
 
-   vec3 num    = D * F * G;
-   float denom = 0.01f + 4 * cosVN * cosLN;
+   vec3 num    = D * G * F;
+   float denom = 0.0001f + 4 * cosVN * cosLN;
 
    return num / denom;
    
@@ -246,10 +246,9 @@ void main()
 
    vec4 fragPosition = viewMat * worldFragPosition;
 
-   vec3 N = tbn * (normal3d);
-   N = normalize(N);
-   vec3 V = normalize(-fragPosition.xyz);  
-   vec3 L = normalize(lightPosition - fragPosition.xyz);
+   vec3 N = normal3d;
+   vec3 V = tbn * normalize(-fragPosition.xyz);  
+   vec3 L = tbn * normalize(lightPosition - fragPosition.xyz);
 
    // Half vector between view vector and light vector
    vec3 H = normalize(V + L);
@@ -270,9 +269,12 @@ void main()
 
    // Final result
 
-   vec3 fr = (kd * fLB + ks * fCT);
+   float dist = length(lightPosition - worldFragPosition.xyz)/135.0f;
+   float att = 1.0f / (dist*dist);
+   vec3 rad = lightColor * att;
+   vec3 fr = (kd * fLB * rad + ks * fCT);
 
-   // Apply shadows
+   // Apply shadow
 
    float shadow = 1.0f - shadowAmountPCF(worldFragPosition.xyz);
    //float shadow = 1.0f - shadowAmount(worldFragPosition.xyz);
@@ -280,7 +282,7 @@ void main()
 
 // PBR //
 
-   outFragment = vec4(fr * lightColor.xyz, 1.0f);
+   outFragment = vec4(fr, 1.0f);
 
 })";
 
