@@ -245,10 +245,11 @@ void main()
    normal3d = normalize(normal3d);
 
    vec4 fragPosition = viewMat * worldFragPosition;
+   vec4 eyeLightPosition = viewMat * vec4(lightPosition, 1.0f);
 
    vec3 N = normal3d;
    vec3 V = tbn * normalize(-fragPosition.xyz);  
-   vec3 L = tbn * normalize(lightPosition - fragPosition.xyz);
+   vec3 L = tbn * normalize(eyeLightPosition.xyz - fragPosition.xyz);
 
    // Half vector between view vector and light vector
    vec3 H = normalize(V + L);
@@ -269,8 +270,8 @@ void main()
 
    // Final result
 
-   float dist = length(lightPosition - worldFragPosition.xyz)/200.0f;
-   float att = 1.0f / (dist*dist);
+   float dist = length(eyeLightPosition.xyz - fragPosition.xyz)/200.0f;
+   float att = max(0.0f, dot(N, L)) / (dist*dist);
    vec3 rad = lightColor * att;
    vec3 fr = (kd * fLB * rad + ks * fCT);
 
